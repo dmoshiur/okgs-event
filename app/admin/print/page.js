@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import CornerFrame from "@/app/components/CornerFrame";
 import { Icon } from "@/app/components/Icons";
-import { TICKET_BACKGROUND_URL } from "@/lib/constants";
+import { DEFAULT_SCHOOL_NAME, SCHOOL_LOGO_URL, TICKET_BACKGROUND_URL } from "@/lib/constants";
 
 export default function PrintPage() {
   const searchParams = useSearchParams();
@@ -204,7 +204,7 @@ export default function PrintPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <img
-                      src={config?.school_logo_1 || "/okgs-mark.svg"}
+                      src={config?.school_logo_1 || SCHOOL_LOGO_URL}
                       alt="Primary school logo"
                       className="h-[14mm] w-[14mm] border border-white/20 bg-white object-contain p-[1mm]"
                     />
@@ -217,7 +217,7 @@ export default function PrintPage() {
                     ) : null}
                     <div>
                       <p className="font-display text-[4mm] font-semibold leading-tight">
-                        {config?.school_name_1 || "OMAR KINDERGARTEN SCHOOL"}
+                        {config?.school_name_1 || DEFAULT_SCHOOL_NAME}
                       </p>
                       {config?.school_name_2 ? (
                         <p className="text-[3mm] text-white/70">{config.school_name_2}</p>
@@ -255,9 +255,12 @@ export default function PrintPage() {
                     <p className="mt-[1mm] font-mono text-[4mm] font-bold tracking-[0.14em] text-gold-soft">
                       {user.user_code}
                     </p>
+                    <p className="mt-[1.5mm] text-[3.6mm] font-semibold text-gold-soft">
+                      Batch: {user.ssc_batch || "—"}
+                    </p>
                     <p className="mt-[2mm] max-w-[80mm] text-[3mm] leading-tight text-white/50">
-                      {user.division}, {user.district}, {user.upazila}, {user.union_name} •{" "}
-                      {user.institute || ""} {user.ssc_batch ? `• Batch ${user.ssc_batch}` : ""}
+                      {user.institute ? `${user.institute} • ` : ""}
+                      {user.division}, {user.district}, {user.upazila}, {user.union_name}
                     </p>
                   </div>
                 </div>

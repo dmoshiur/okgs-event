@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
 import { getAdminFromRequest } from "@/lib/auth";
-
-// Day boundaries follow Bangladesh time (UTC+6), where the event runs.
-const TODAY = "date(timestamp, '+6 hours') = date('now', '+6 hours')";
+import { CURRENT_STATE_CTE, TODAY_FILTER, toNumber } from "@/lib/attendance";
 
 export async function GET(request) {
   try {
@@ -11,28 +9,34 @@ export async function GET(request) {
     const auth = await getAdminFromRequest(request);
     if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const [registered, admins, inside, today] = await Promise.all([
+    const [registered, gate, today] = await Promise.all([
       db.execute("SELECT COUNT(*) AS count FROM users"),
-      db.execute("SELECT COUNT(*) AS count FROM admins"),
-      db.execute(`SELECT COUNT(*) AS count FROM (
-        SELECT type, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY timestamp DESC, id DESC) AS rn
-        FROM attendance_logs
-      ) WHERE rn = 1 AND type = 'check_in'`),
+      db.execute(`${CURRENT_STATE_CTE}
+        SELECT
+          (SELECT COUNT(*) FROM admitted) AS admitted,
+          SUM(CASE WHEN cs.type = 'check_in' THEN 1 ELSE 0 END) AS inside,
+          SUM(CASE WHEN cs.type = 'check_out' THEN 1 ELSE 0 END) AS exited
+        FROM current_state cs`),
       db.execute(`SELECT
         SUM(CASE WHEN type = 'check_in' THEN 1 ELSE 0 END) AS check_ins,
         SUM(CASE WHEN type = 'check_out' THEN 1 ELSE 0 END) AS exits,
         COUNT(DISTINCT CASE WHEN type = 'check_in' THEN user_id END) AS admitted
-        FROM attendance_logs WHERE ${TODAY}`),
+        FROM attendance_logs WHERE ${TODAY_FILTER}`),
     ]);
 
+    const gateRow = gate.rows[0] || {};
     const todayRow = today.rows[0] || {};
+    const registeredCount = toNumber(registered.rows[0]?.count);
+
     return NextResponse.json({
-      registered: Number(registered.rows[0]?.count || 0),
-      admins: Number(admins.rows[0]?.count || 0),
-      inside_now: Number(inside.rows[0]?.count || 0),
-      check_ins_today: Number(todayRow.check_ins || 0),
-      exits_today: Number(todayRow.exits || 0),
-      admitted_today: Number(todayRow.admitted || 0),
+      registered: registeredCount,
+      admitted_at_gate: toNumber(gateRow.admitted),
+      not_yet_admitted: Math.max(0, registeredCount - toNumber(gateRow.admitted)),
+      inside_now: toNumber(gateRow.inside),
+      exited_now: toNumber(gateRow.exited),
+      check_ins_today: toNumber(todayRow.check_ins),
+      exits_today: toNumber(todayRow.exits),
+      admitted_today: toNumber(todayRow.admitted),
     });
   } catch (error) {
     console.error("Stats lookup failed:", error);

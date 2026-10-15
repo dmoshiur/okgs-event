@@ -104,7 +104,7 @@ export default function AdminUsersPage() {
         <div>
           <p className="eyebrow">Attendee directory</p>
           <h1 className="font-display text-[clamp(1.8rem,3.4vw,2.4rem)] font-semibold tracking-tight text-ink-950">
-            Students
+            Users
           </h1>
           <p className="page-lead">{total} attendees • search, edit, delete, or add a manual entry.</p>
         </div>
