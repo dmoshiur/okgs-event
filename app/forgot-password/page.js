@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import AuthScreen from "@/app/components/AuthScreen";
+import CornerFrame from "@/app/components/CornerFrame";
+import { Icon } from "@/app/components/Icons";
 
 export default function ForgotPasswordPage() {
   const [identifier, setIdentifier] = useState("");
@@ -31,59 +34,71 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10">
-      <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-2xl sm:p-9">
-        <Link href="/login" className="text-xs font-semibold text-slate-500 hover:text-slate-900">
-          ← Back to sign in
-        </Link>
-        <div className="mt-7 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-lg font-black text-amber-900">
-          ?
-        </div>
-        <h1 className="mt-5 text-2xl font-black tracking-tight text-slate-950">Forgot your password?</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          Enter the phone number, email, or staff username on your account. If an email address is linked, we’ll send a single-use reset link.
-        </p>
+    <AuthScreen>
+      <section className="reveal relative z-10 w-full max-w-[470px] border border-line-strong bg-surface-warm p-7 shadow-floated sm:p-9">
+        <CornerFrame size={54} inset={10} tone="gold" className="sm:hidden" />
+        <CornerFrame size={130} inset={14} tone="gold" className="hidden sm:block" />
 
-        {message ? (
-          <div role="status" className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
-            {message}
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
-            <div>
-              <label htmlFor="reset-identifier" className="text-xs font-semibold text-slate-700">
-                Phone, email, or staff username
+        <div className="relative">
+          <Link href="/login" className="link-underline text-xs">
+            ← Back to sign in
+          </Link>
+
+          <p className="eyebrow mt-7">
+            <span>Account recovery</span>
+          </p>
+          <h1 className="font-display text-[30px] font-semibold leading-tight tracking-tight text-ink-950">
+            Forgot your password?
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Enter the phone number, email, or staff username on your account. If an email address is
+            linked, we&apos;ll send a single-use reset link.
+          </p>
+
+          {message ? (
+            <p role="status" className="alert alert-success mt-6">
+              {message}
+            </p>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+              <label htmlFor="reset-identifier" className="field mb-0">
+                <span className="field-label">Phone, email, or staff username</span>
+                <div className="relative">
+                  <span className="field-icon">
+                    <Icon name="user" className="h-5 w-5" />
+                  </span>
+                  <input
+                    id="reset-identifier"
+                    type="text"
+                    autoComplete="username"
+                    value={identifier}
+                    onChange={(event) => setIdentifier(event.target.value)}
+                    required
+                    maxLength={254}
+                    placeholder="Enter your account details"
+                    className="input input-icon"
+                  />
+                </div>
               </label>
-              <input
-                id="reset-identifier"
-                type="text"
-                autoComplete="username"
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                required
-                maxLength={254}
-                placeholder="Enter your account details"
-                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 text-sm outline-none placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
-              />
-            </div>
-            {error ? (
-              <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {error}
-              </div>
-            ) : null}
-            <button
-              disabled={loading}
-              className="w-full rounded-xl bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-60"
-            >
-              {loading ? "Sending…" : "Send reset link"}
-            </button>
-          </form>
-        )}
 
-        <p className="mt-6 text-center text-[11px] leading-5 text-slate-400">
-          Reset links expire after 30 minutes. Accounts without an email address need help from a school administrator.
-        </p>
+              {error ? (
+                <p role="alert" className="alert alert-error">
+                  {error}
+                </p>
+              ) : null}
+
+              <button disabled={loading} className="btn btn-ink btn-shine w-full">
+                {loading ? "Sending…" : "Send reset link"}
+              </button>
+            </form>
+          )}
+
+          <p className="mt-6 border-t border-line pt-4 text-center text-[11px] leading-5 text-muted-2">
+            Reset links expire after 30 minutes. Accounts without an email address need help from a
+            school administrator.
+          </p>
+        </div>
       </section>
-    </main>
+    </AuthScreen>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import CornerFrame from "@/app/components/CornerFrame";
+import { Icon } from "@/app/components/Icons";
 
 export default function ScanPage() {
   const [scanning, setScanning] = useState(false);
@@ -39,8 +41,8 @@ export default function ScanPage() {
           } catch {}
           await handleScan(decodedText);
         },
-        (err) => {
-          // ignore scan failure
+        () => {
+          // ignore per-frame decode misses
         }
       );
       setScanning(true);
@@ -108,118 +110,204 @@ export default function ScanPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-black text-slate-900">Live QR Gate Scanner</h1>
-      <p className="text-sm text-slate-500 mt-1">WebCam scan • Validates user • Logs Check-In / Check-Out real-time to Turso</p>
+      <p className="eyebrow">Live gate scanner</p>
+      <h1 className="font-display text-[clamp(1.8rem,3.4vw,2.4rem)] font-semibold tracking-tight text-ink-950">
+        QR gate scanner
+      </h1>
+      <p className="page-lead">
+        Webcam scan • validates the attendee • logs check-in / check-out to Turso in real time.
+      </p>
 
-      <div className="mt-6 grid lg:grid-cols-2 gap-6">
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {/* Scanner */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-900 text-sm">Camera Scanner</h3>
+        <section className="relative border border-line bg-surface p-6">
+          <CornerFrame size={40} inset={10} tone="gold" />
+          <div className="relative flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-[1.05rem] font-semibold text-ink-900">Camera scanner</h2>
             {!scanning ? (
-              <button onClick={startScanner} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold">Start Camera</button>
+              <button onClick={startScanner} className="btn btn-ink btn-sm">
+                <Icon name="camera" className="h-4 w-4" /> Start camera
+              </button>
             ) : (
               <div className="flex gap-2">
-                {(result || error) && (
-                  <button onClick={resumeScanner} className="bg-amber-400 text-slate-900 px-4 py-2 rounded-full text-xs font-bold">Scan Next Pass</button>
-                )}
-                <button onClick={stopScanner} className="bg-red-50 text-red-600 px-4 py-2 rounded-full text-xs font-bold">Stop Camera</button>
+                {result || error ? (
+                  <button onClick={resumeScanner} className="btn btn-gold btn-sm">
+                    Scan next pass
+                  </button>
+                ) : null}
+                <button onClick={stopScanner} className="btn btn-danger btn-sm">
+                  Stop camera
+                </button>
               </div>
             )}
           </div>
 
-          <div id="qr-reader" className="w-full bg-slate-50 rounded-xl overflow-hidden border border-dashed border-slate-300 min-h-[300px] flex items-center justify-center">
-            {!scanning && !cameraReady && (
-              <div className="text-center p-8">
-                <div className="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-3">📷</div>
-                <p className="text-xs text-slate-500">Click Start Camera to scan attendee QR codes. Ensure HTTPS & camera permission.</p>
+          <div
+            id="qr-reader"
+            className="relative mt-4 flex min-h-[300px] w-full items-center justify-center overflow-hidden border border-dashed border-line-strong bg-paper-2"
+          >
+            {!scanning && !cameraReady ? (
+              <div className="p-8 text-center">
+                <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xs border border-line bg-surface text-ink-900">
+                  <Icon name="scan" className="h-6 w-6" />
+                </span>
+                <p className="text-xs leading-5 text-muted">
+                  Start the camera to scan attendee QR codes. HTTPS and camera permission are required.
+                </p>
               </div>
-            )}
+            ) : null}
           </div>
 
-          <p className="mt-3 text-[11px] leading-5 text-slate-400">The camera pauses after each QR pass to prevent accidental duplicate check-in/check-out. Choose “Scan Next Pass” to continue.</p>
+          <p className="relative mt-3 text-[11px] leading-5 text-muted-2">
+            The camera pauses after each pass so a single QR cannot log an accidental duplicate
+            check-in or check-out. Choose “Scan next pass” to continue.
+          </p>
 
-          <div className="mt-6">
-            <label className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Manual Code Entry (Fallback)</label>
-            <div className="flex gap-2 mt-2">
+          <div className="relative mt-6">
+            <label htmlFor="manual-code" className="field-label">
+              Manual code entry (fallback)
+            </label>
+            <div className="mt-2 flex gap-2">
               <input
+                id="manual-code"
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
-                placeholder="Enter user_code e.g. OKGS26ABCD1234"
-                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-slate-900"
+                placeholder="e.g. OKGS26ABCD1234"
+                className="input flex-1"
                 onKeyDown={(e) => e.key === "Enter" && handleManual()}
               />
-              <button onClick={handleManual} className="bg-amber-400 text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold">Verify</button>
+              <button onClick={handleManual} className="btn btn-gold btn-sm">
+                Verify
+              </button>
             </div>
           </div>
 
-          {error && <div className="mt-4 bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl">{error}</div>}
-        </div>
+          {error ? (
+            <p role="alert" className="alert alert-error relative mt-4">
+              {error}
+            </p>
+          ) : null}
+        </section>
 
         {/* Result */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 min-h-[300px]">
-            <h3 className="font-bold text-slate-900 text-sm mb-4">Scan Result</h3>
+          <section className="relative min-h-[300px] border border-line bg-surface p-6">
+            <CornerFrame size={40} inset={10} tone="gold" />
+            <h2 className="relative font-display text-[1.05rem] font-semibold text-ink-900">
+              Scan result
+            </h2>
+
             {!result ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 mx-auto rounded-full bg-slate-50 flex items-center justify-center mb-3">🔍</div>
-                <p className="text-xs text-slate-400">No scan yet. Scan a QR to validate attendee.</p>
+              <div className="relative py-12 text-center">
+                <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xs border border-line bg-paper-2 text-muted">
+                  <Icon name="search" className="h-5 w-5" />
+                </span>
+                <p className="text-xs text-muted-2">No scan yet. Scan a QR pass to validate an attendee.</p>
               </div>
             ) : result.valid === false ? (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                <p className="text-red-600 font-bold">❌ Invalid QR</p>
-                <p className="text-xs text-red-500 mt-1">{result.error}</p>
+              <div className="relative mt-4 border border-[#e5b9b6] bg-state-error-bg p-4 text-center">
+                <p className="font-display font-semibold text-state-error">Invalid QR pass</p>
+                <p className="mt-1 text-xs text-state-error/80">{result.error}</p>
               </div>
             ) : (
-              <div>
-                <div className={`rounded-xl p-4 border ${result.action === "check_in" ? "bg-emerald-50 border-emerald-200" : "bg-orange-50 border-orange-200"}`}>
-                  <p className={`font-black text-sm ${result.action === "check_in" ? "text-emerald-700" : "text-orange-700"}`}>
-                    {result.action === "check_in" ? "✅ CHECK-IN SUCCESS" : "👋 CHECK-OUT SUCCESS"}
+              <div className="relative mt-4">
+                <div
+                  className={`border p-4 ${
+                    result.action === "check_in"
+                      ? "border-[#b7dcc8] bg-state-success-bg"
+                      : "border-gold/40 bg-gold-tint"
+                  }`}
+                >
+                  <p
+                    className={`font-display text-sm font-bold ${
+                      result.action === "check_in" ? "text-state-success" : "text-gold-deep"
+                    }`}
+                  >
+                    {result.action === "check_in" ? "Check-in recorded" : "Check-out recorded"}
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-1">Logged at {new Date().toLocaleString()} • {result.action}</p>
+                  <p className="mt-1 text-[11px] text-muted">
+                    Logged at {new Date().toLocaleString()}
+                  </p>
                 </div>
 
                 <div className="mt-4 flex gap-4">
-                  <img src={result.user.photo_url} alt={result.user.name} className="w-20 h-20 rounded-xl object-cover border-2 border-slate-100" />
+                  <img
+                    src={result.user.photo_url}
+                    alt={result.user.name}
+                    className="h-20 w-20 rounded-xs border border-line object-cover"
+                  />
                   <div>
-                    <h4 className="font-bold text-slate-900">{result.user.name}</h4>
-                    <p className="text-xs text-slate-600">{result.user.user_code} • {result.user.phone}</p>
-                    <p className="text-[11px] text-slate-500 mt-1">{result.user.division}, {result.user.district}, {result.user.upazila}</p>
-                    <p className="text-[11px] text-slate-400">{result.user.institute} {result.user.ssc_batch ? `• ${result.user.ssc_batch}` : ""}</p>
+                    <h3 className="font-display text-lg font-semibold text-ink-900">{result.user.name}</h3>
+                    <p className="text-xs text-body-soft">
+                      {result.user.user_code} • {result.user.phone}
+                    </p>
+                    <p className="mt-1 text-[11px] text-muted">
+                      {result.user.division}, {result.user.district}, {result.user.upazila}
+                    </p>
+                    <p className="text-[11px] text-muted-2">
+                      {result.user.institute} {result.user.ssc_batch ? `• ${result.user.ssc_batch}` : ""}
+                    </p>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent Logs for this user</p>
+                <div className="mt-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-2">
+                    Recent logs for this attendee
+                  </p>
                   <div className="mt-2 space-y-2">
                     {result.logs?.map((l) => (
-                      <div key={l.id} className="flex justify-between text-xs border-b border-slate-100 pb-1">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${l.type === "check_in" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"}`}>{l.type}</span>
-                        <span className="text-slate-500">{new Date(l.timestamp).toLocaleString()}</span>
+                      <div key={l.id} className="flex items-center justify-between border-b border-line pb-1.5">
+                        <span
+                          className={`tag uppercase ${l.type === "check_in" ? "tag-success" : "tag-warning"}`}
+                        >
+                          {l.type === "check_in" ? "Check-in" : "Check-out"}
+                        </span>
+                        <span className="text-xs text-muted">{new Date(l.timestamp).toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
           {/* History */}
-          <div className="bg-slate-900 rounded-2xl p-6 text-white">
-            <h3 className="font-bold text-sm">Today&apos;s Scan History (Last 10)</h3>
-            <div className="mt-4 space-y-2 max-h-[240px] overflow-y-auto">
-              {history.length === 0 ? <p className="text-xs text-white/40">No scans yet</p> : history.map((h, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl p-2">
-                  <img src={h.user.photo_url} alt={h.user.name} className="w-8 h-8 rounded-full object-cover" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{h.user.name} • {h.user.user_code}</p>
-                    <p className="text-[10px] text-white/50">{h.action} • {new Date().toLocaleTimeString()}</p>
+          <section className="relative border border-line-strong bg-ink-950 p-6 text-white">
+            <CornerFrame size={52} inset={10} tone="gold-soft" />
+            <h2 className="relative font-display text-[1.05rem] font-semibold text-[#f7f3e9]">
+              Today&apos;s scan history (last 10)
+            </h2>
+            <div className="relative mt-4 max-h-[260px] space-y-2 overflow-y-auto">
+              {history.length === 0 ? (
+                <p className="text-xs text-white/40">No scans yet</p>
+              ) : (
+                history.map((h, i) => (
+                  <div key={i} className="flex items-center gap-3 border border-white/10 bg-white/[0.04] p-2">
+                    <img
+                      src={h.user.photo_url}
+                      alt={h.user.name}
+                      className="h-8 w-8 rounded-xs border border-white/15 object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-medium">
+                        {h.user.name} • {h.user.user_code}
+                      </p>
+                      <p className="text-[10px] text-white/50">
+                        {h.action} • {new Date().toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <span
+                      className={`tag uppercase ${
+                        h.action === "check_in" ? "tag-success" : "tag-warning"
+                      }`}
+                    >
+                      {h.action === "check_in" ? "In" : "Out"}
+                    </span>
                   </div>
-                  <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${h.action === "check_in" ? "bg-emerald-400 text-slate-900" : "bg-orange-400 text-slate-900"}`}>{h.action}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>

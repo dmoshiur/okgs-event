@@ -2,12 +2,25 @@
 
 A permanent, responsive event registration and attendance system built with Next.js App Router, Turso/LibSQL, Cloudinary, QR codes, and Nodemailer-compatible SMTP.
 
+## Theme
+
+The interface is a clone of the `thinktank-academia.onrender.com` design system, applied to every screen:
+
+- **Palette** — deep academic ink (`#050d18 → #1f4166`), restrained premium gold (`#c29a3b`, `#9c7826`, `#e4c97e`, `#f7f0dd`), editorial blue (`#1d5bbf`), and warm paper neutrals (`#faf8f3`, `#f3f0e8`, `#ece8dc`, `#fcfaf6`) with hairline lines (`#e7e2d6`, `#d5cebe`). Tokens live in `tailwind.config.js` and as CSS custom properties in `app/globals.css`.
+- **Typography** — Fraunces for display headings, Inter for UI, Hind Siliguri for Bangla notices, loaded once from the root layout.
+- **90-degree framing engine** — `app/components/CornerFrame.js` renders four precise right-angle brackets inside any relatively positioned container (size, inset, thickness, tone are all configurable). It is used at the viewport level on the sign-in/registration/recovery screens and on cards, panels, stat cards, the gate scanner, the attendee pass, and the printed A4 passes (`.corner-frame--print` survives `@media print`). Corner radii stay disciplined (2–14 px) so nothing reads as a soft app-default card.
+- **Preset record** — the preset identifier is stored in `system_config.theme_preset` (default `thinktank-academia`) and is shown read-only on `/admin/settings`.
+
+Shared primitives (`.eyebrow`, `.panel`, `.btn-*`, `.input`, `.stat-card`, `.tag`, `.tab`, `.nav-item`, `.data-table`) are defined once in `app/globals.css`, so pages compose them instead of re-styling ad hoc.
+
+Support contact `+8801709202140` (call and WhatsApp) is rendered from `system_config.support_phone` on the sign-in card footer, the registration footer, the admin sidebar/More sheet, the dashboard help panel, and the attendee dashboard.
+
 ## Portal routes
 
-- `/` and `/login` — one unified sign-in screen; there is no marketing or landing page. The sign-in card uses the muted full-screen school video, dynamically configured school branding, attendee/staff sign-in, password visibility, and password recovery.
+- `/` and `/login` — one unified sign-in screen; there is no marketing or landing page. The sign-in card sits on the muted full-screen school video inside a 90-degree gold frame, with dynamically configured school branding, an amber event pill, attendee/staff sign-in (user and key icons plus password visibility), the navy `Sign in →` action, the attendee-registration link, and password recovery.
 - `/register` — public attendee registration with photo upload, a Bangladesh division → district → upazila → union address selector, and an instant QR pass.
 - `/dashboard` — attendee pass, QR download, printable ticket, and attendance history.
-- `/admin` — staff dashboard: six summary cards (gate figures are live; finance figures show a dash until a fee ledger exists) and a notices feed with filters, expandable notices, urgent badges, and staff-created notices.
+- `/admin` — staff dashboard: the dark-ink sidebar with the school shield, active-event selector, the nine primary modules, a framed help panel, and the profile bar with the role tag; the content area carries the serif "Dashboard" heading, six framed stat cards (Fair Collections, Current Balance, Pending Funds, Expenses, Students Paid, Admitted At The Gate — gate figures are live, finance figures show a dash until a fee ledger exists), and a notices feed with `All / Science Fair / Notice / Update / Unread` filters, expandable notices, urgent badges, and staff-created notices.
 - `/admin/canteen`, `/admin/funds`, `/admin/dues`, `/admin/expenses`, `/admin/memos`, `/admin/collections` — navigation placeholders. They state that the module is not connected and show no figures.
 - `/admin/scan` — webcam QR scanner with manual-code fallback and alternating check-in/check-out logs.
 - `/admin/print` — individual or batch A4 pass printing.
@@ -57,7 +70,7 @@ For email, configure either SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP
 - Passwords are bcrypt-hashed. Session cookies are HTTP-only and secure in production. Password reset links are single-use and expire after 30 minutes; the account must have an email address to receive one.
 - Manual attendees do not need to set a password. Their accounts receive an undisclosed random credential rather than a shared default password.
 - The gate scanner records check-in/check-out events with the current admin and server timestamp. The camera pauses after a scan to prevent repeated frame reads from generating duplicate attendance events.
-- A4 tickets use the specified background template and `@page { size: A4 portrait; margin: 0; }` print sizing.
+- A4 tickets use the specified background template (`https://i.postimg.cc/CxG99ZrK/image.png`), the school logos/names, a centred QR code with the attendee photo embedded in its middle, the attendee name and phone, and a gold 90-degree frame overlay, all at `@page { size: A4 portrait; margin: 0; }`.
 
 ## Build and run
 

@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import CornerFrame from "@/app/components/CornerFrame";
+import { Icon } from "@/app/components/Icons";
 
 export default function AttendancePage() {
   const [logs, setLogs] = useState([]);
@@ -21,7 +23,9 @@ export default function AttendancePage() {
     }
   }
 
-  useEffect(() => { fetchLogs(); }, []);
+  useEffect(() => {
+    fetchLogs();
+  }, []);
 
   const filtered = logs.filter((l) => {
     if (filter === "all") return true;
@@ -31,56 +35,99 @@ export default function AttendancePage() {
   const checkInCount = logs.filter((l) => l.type === "check_in").length;
   const checkOutCount = logs.filter((l) => l.type === "check_out").length;
 
+  const TABS = [
+    { key: "all", label: "All" },
+    { key: "check_in", label: "Check-in" },
+    { key: "check_out", label: "Check-out" },
+  ];
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Attendance Logs</h1>
-          <p className="text-sm text-slate-500">{logs.length} logs • {checkInCount} check-ins • {checkOutCount} check-outs</p>
+          <p className="eyebrow">Gate record</p>
+          <h1 className="font-display text-[clamp(1.8rem,3.4vw,2.4rem)] font-semibold tracking-tight text-ink-950">
+            Attendance logs
+          </h1>
+          <p className="page-lead">
+            {logs.length} logs • {checkInCount} check-ins • {checkOutCount} check-outs
+          </p>
         </div>
-        <button onClick={fetchLogs} className="border border-slate-200 px-4 py-2 rounded-full text-sm">Refresh</button>
+        <button onClick={fetchLogs} className="btn btn-outline btn-sm">
+          <Icon name="refresh" className="h-4 w-4" /> Refresh
+        </button>
       </div>
 
-      <div className="flex gap-2 mb-6">
-        <button onClick={() => setFilter("all")} className={`px-4 py-2 rounded-full text-xs font-bold ${filter === "all" ? "bg-slate-900 text-white" : "bg-white border border-slate-200"}`}>All</button>
-        <button onClick={() => setFilter("check_in")} className={`px-4 py-2 rounded-full text-xs font-bold ${filter === "check_in" ? "bg-emerald-600 text-white" : "bg-white border border-slate-200"}`}>Check-In</button>
-        <button onClick={() => setFilter("check_out")} className={`px-4 py-2 rounded-full text-xs font-bold ${filter === "check_out" ? "bg-orange-600 text-white" : "bg-white border border-slate-200"}`}>Check-Out</button>
+      <div role="tablist" aria-label="Filter attendance logs" className="mb-6 flex flex-wrap gap-2">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={filter === tab.key}
+            onClick={() => setFilter(tab.key)}
+            className={`tab ${filter === tab.key ? "tab-active" : ""}`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="relative border border-line bg-surface">
+        <CornerFrame size={34} inset={9} tone="gold" className="hidden sm:block" />
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-[11px] font-bold tracking-widest uppercase text-slate-500">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="px-4 py-3 text-left">User</th>
-                <th className="px-4 py-3 text-left">Type</th>
-                <th className="px-4 py-3 text-left">Timestamp</th>
-                <th className="px-4 py-3 text-left">Scanned By</th>
+                <th>Attendee</th>
+                <th>Type</th>
+                <th>Timestamp</th>
+                <th>Scanned by</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {loading ? (
-                <tr><td colSpan={4} className="px-4 py-10 text-center text-slate-400">Loading...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-10 text-center text-slate-400">No logs</td></tr>
-              ) : filtered.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <img src={log.photo_url} alt={log.name} className="w-8 h-8 rounded-full object-cover" />
-                      <div>
-                        <p className="font-medium text-slate-900 text-xs">{log.name}</p>
-                        <p className="text-[11px] text-slate-500">{log.user_code}</p>
-                      </div>
-                    </div>
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-muted-2">
+                    Loading…
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-[11px] font-bold ${log.type === "check_in" ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-700"}`}>{log.type}</span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">{new Date(log.timestamp).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{log.scanned_by_name}</td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-muted-2">
+                    No logs recorded yet
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((log) => (
+                  <tr key={log.id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={log.photo_url}
+                          alt={log.name}
+                          className="h-8 w-8 rounded-xs border border-line object-cover"
+                        />
+                        <div>
+                          <p className="text-xs font-semibold text-ink-900">{log.name}</p>
+                          <p className="text-[11px] text-muted-2">{log.user_code}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`tag uppercase ${
+                          log.type === "check_in" ? "tag-success" : "tag-warning"
+                        }`}
+                      >
+                        {log.type === "check_in" ? "Check-in" : "Check-out"}
+                      </span>
+                    </td>
+                    <td className="text-xs">{new Date(log.timestamp).toLocaleString()}</td>
+                    <td className="text-xs text-muted">{log.scanned_by_name}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
