@@ -7,13 +7,16 @@ A permanent, responsive event registration and attendance system built with Next
 - `/` and `/login` — one unified sign-in screen; there is no marketing or landing page. The sign-in card uses the muted full-screen school video, dynamically configured school branding, attendee/staff sign-in, password visibility, and password recovery.
 - `/register` — public attendee registration with photo upload, a Bangladesh division → district → upazila → union address selector, and an instant QR pass.
 - `/dashboard` — attendee pass, QR download, printable ticket, and attendance history.
-- `/admin` — staff dashboard and attendee directory.
+- `/admin` — staff dashboard: six summary cards (gate figures are live; finance figures show a dash until a fee ledger exists) and a notices feed with filters, expandable notices, urgent badges, and staff-created notices.
+- `/admin/canteen`, `/admin/funds`, `/admin/dues`, `/admin/expenses`, `/admin/memos`, `/admin/collections` — navigation placeholders. They state that the module is not connected and show no figures.
 - `/admin/scan` — webcam QR scanner with manual-code fallback and alternating check-in/check-out logs.
 - `/admin/print` — individual or batch A4 pass printing.
-- `/admin/settings` — school logos/names, active event, notice, and ticket branding.
+- `/admin/settings` — school logos/names, active event, notice, and ticket branding. The support phone (default `+8801709202140`) is edited here.
 - `/admin/admins` — super-admin-only staff account management.
 
 The address hierarchy includes all eight divisions and the bundled district/upazila/union lists. The source and license attribution are in `data/LOCATION-DATA-LICENSE.md`.
+
+Support contact (call and WhatsApp) appears on the sign-in card, the admin sidebar, and the attendee dashboard.
 
 ## Stack
 

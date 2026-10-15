@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SupportContact from "@/app/components/SupportContact";
+import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
 
 const VIDEO_URL =
   "https://res.cloudinary.com/tt7oyjd1/video/upload/v1791960191/okgs/film/odyssey-montage-v6.mp4";
@@ -199,7 +201,7 @@ export default function LoginForm({ config }) {
                 autoComplete="username"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Enter your phone, email, or username"
+                placeholder="Phone, email, or staff username"
                 className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
                 required
               />
@@ -226,7 +228,7 @@ export default function LoginForm({ config }) {
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Enter your password"
+                placeholder="Password"
                 className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pl-4 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
                 required
               />
@@ -283,6 +285,10 @@ export default function LoginForm({ config }) {
           <p className="mt-4 text-[10px] leading-5 text-slate-400">
             Secure access for attendees, staff, and school administrators.
           </p>
+          <SupportContact
+            phone={config?.support_phone || DEFAULT_SUPPORT_PHONE}
+            className="mt-4 border-t border-slate-100 pt-4 text-[11px] leading-5 text-slate-500"
+          />
         </div>
       </section>
     </main>

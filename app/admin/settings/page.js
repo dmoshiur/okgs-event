@@ -13,6 +13,7 @@ export default function SettingsPage() {
     event_location: "",
     notice_board: "",
     guidelines: "",
+    support_phone: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,6 +38,7 @@ export default function SettingsPage() {
               event_location: data.event_location || "",
               notice_board: data.notice_board || "",
               guidelines: data.guidelines || "",
+              support_phone: data.support_phone || "",
             });
           }
         }
@@ -163,6 +165,10 @@ export default function SettingsPage() {
           <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Guidelines</label>
             <textarea name="guidelines" value={form.guidelines} onChange={handleChange} rows={3} className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Support Phone (Call / WhatsApp)</label>
+            <input name="support_phone" value={form.support_phone} onChange={handleChange} className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="+8801709202140" />
           </div>
         </div>
 

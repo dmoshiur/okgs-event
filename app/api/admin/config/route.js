@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { db, getSystemConfig, initDb } from "@/lib/db";
+import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
 import { getAdminFromRequest } from "@/lib/auth";
+
+function isSupportPhone(value) {
+  return /^\+?[0-9][0-9 ()-]{5,19}$/.test(value);
+}
 
 function isImageUrl(value, required = false) {
   if (!value && !required) return true;
@@ -36,6 +41,7 @@ export async function POST(request) {
       event_location: String(body.event_location || "").trim(),
       notice_board: String(body.notice_board || "").trim(),
       guidelines: String(body.guidelines || "").trim(),
+      support_phone: String(body.support_phone || "").trim() || DEFAULT_SUPPORT_PHONE,
     };
 
     if (
@@ -49,6 +55,9 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+    if (!isSupportPhone(values.support_phone)) {
+      return NextResponse.json({ error: "Enter a valid support phone number." }, { status: 400 });
+    }
     if (Object.values(values).some((value) => value.length > 2000)) {
       return NextResponse.json({ error: "Configuration fields must be under 2,000 characters." }, { status: 400 });
     }
@@ -59,7 +68,7 @@ export async function POST(request) {
         sql: `UPDATE system_config SET
           school_name_1=?, school_name_2=?, school_logo_1=?, school_logo_2=?,
           event_title=?, event_description=?, event_date=?, event_location=?,
-          notice_board=?, guidelines=?, updated_at=CURRENT_TIMESTAMP
+          notice_board=?, guidelines=?, support_phone=?, updated_at=CURRENT_TIMESTAMP
           WHERE id=?`,
         args: [...Object.values(values), current.id],
       });
@@ -68,8 +77,8 @@ export async function POST(request) {
         sql: `INSERT INTO system_config (
           school_name_1, school_name_2, school_logo_1, school_logo_2,
           event_title, event_description, event_date, event_location,
-          notice_board, guidelines
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          notice_board, guidelines, support_phone
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: Object.values(values),
       });
     }
