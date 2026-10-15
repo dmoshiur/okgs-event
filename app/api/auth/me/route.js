@@ -1,27 +1,41 @@
 import { NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
-import { verifyToken } from "@/lib/auth";
+import { getAuthFromRequest } from "@/lib/auth";
 
-export async function GET(req) {
+export async function GET(request) {
   try {
     await initDb();
-    const cookie = req.headers.get("cookie") || "";
-    const match = cookie.match(/okgs_token=([^;]+)/);
-    if (!match) return NextResponse.json({ authenticated: false }, { status: 401 });
-    const token = decodeURIComponent(match[1]);
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ authenticated: false }, { status: 401 });
+    const payload = getAuthFromRequest(request);
+    if (!payload) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
 
     if (payload.type === "admin") {
-      const res = await db.execute({ sql: "SELECT id, username, email, role FROM admins WHERE id = ?", args: [payload.id] });
-      if (res.rows.length === 0) return NextResponse.json({ authenticated: false }, { status: 401 });
-      return NextResponse.json({ authenticated: true, ...res.rows[0], type: "admin" });
-    } else {
-      const res = await db.execute({ sql: "SELECT id, user_code, name, phone, email, photo_url, qr_code_url FROM users WHERE id = ?", args: [payload.id] });
-      if (res.rows.length === 0) return NextResponse.json({ authenticated: false }, { status: 401 });
-      return NextResponse.json({ authenticated: true, ...res.rows[0], type: "user" });
+      const result = await db.execute({
+        sql: "SELECT id, username, email, role FROM admins WHERE id = ?",
+        args: [payload.id],
+      });
+      if (result.rows.length === 0) {
+        return NextResponse.json({ authenticated: false }, { status: 401 });
+      }
+      return NextResponse.json({ authenticated: true, ...result.rows[0], type: "admin" });
     }
-  } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+
+    if (payload.type === "user") {
+      const result = await db.execute({
+        sql: `SELECT id, user_code, name, phone, email, photo_url, qr_code_url, created_at
+          FROM users WHERE id = ?`,
+        args: [payload.id],
+      });
+      if (result.rows.length === 0) {
+        return NextResponse.json({ authenticated: false }, { status: 401 });
+      }
+      return NextResponse.json({ authenticated: true, ...result.rows[0], type: "user" });
+    }
+
+    return NextResponse.json({ authenticated: false }, { status: 401 });
+  } catch (error) {
+    console.error("Session lookup failed:", error);
+    return NextResponse.json({ error: "Unable to check session." }, { status: 500 });
   }
 }

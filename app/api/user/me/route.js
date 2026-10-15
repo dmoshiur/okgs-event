@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
-import { verifyToken } from "@/lib/auth";
+import { getAuthFromRequest } from "@/lib/auth";
 
-export async function GET(req) {
+export async function GET(request) {
   try {
     await initDb();
-    const cookie = req.headers.get("cookie") || "";
-    const match = cookie.match(/okgs_token=([^;]+)/);
-    if (!match) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const payload = verifyToken(decodeURIComponent(match[1]));
-    if (!payload || payload.type !== "user") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = getAuthFromRequest(request, "user");
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const res = await db.execute({ sql: "SELECT * FROM users WHERE id = ?", args: [payload.id] });
-    if (res.rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json(res.rows[0]);
-  } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    const result = await db.execute({
+      sql: `SELECT id, user_code, name, phone, email, division, district, upazila,
+        union_name, institute, ssc_batch, photo_url, qr_code_url, created_at
+        FROM users WHERE id = ?`,
+      args: [auth.id],
+    });
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    return NextResponse.json(result.rows[0]);
+  } catch (error) {
+    console.error("User profile lookup failed:", error);
+    return NextResponse.json({ error: "Unable to load your profile." }, { status: 500 });
   }
 }

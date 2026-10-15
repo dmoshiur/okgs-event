@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function AdminUsersPage() {
@@ -18,13 +18,13 @@ export default function AdminUsersPage() {
     division: "Rajshahi",
     district: "Joypurhat",
     upazila: "Joypurhat Sadar",
-    union_name: "Amdoi",
+    union_name: "Amdai",
     institute: "",
     ssc_batch: "",
     photo_url: "",
   });
 
-  async function fetchUsers(q = search) {
+  const fetchUsers = useCallback(async (q = "") => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/users?search=${encodeURIComponent(q)}&limit=100`);
@@ -38,11 +38,11 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchUsers("");
-  }, []);
+  }, [fetchUsers]);
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -55,8 +55,8 @@ export default function AdminUsersPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setShowAdd(false);
-      setForm({ name: "", phone: "", email: "", division: "Rajshahi", district: "Joypurhat", upazila: "Joypurhat Sadar", union_name: "Amdoi", institute: "", ssc_batch: "", photo_url: "" });
-      fetchUsers();
+      setForm({ name: "", phone: "", email: "", division: "Rajshahi", district: "Joypurhat", upazila: "Joypurhat Sadar", union_name: "Amdai", institute: "", ssc_batch: "", photo_url: "" });
+      fetchUsers(search);
     } catch (err) {
       alert(err.message);
     }
@@ -65,7 +65,7 @@ export default function AdminUsersPage() {
   async function handleDelete(id) {
     if (!confirm("Delete this user? This will also delete attendance logs.")) return;
     const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
-    if (res.ok) fetchUsers();
+    if (res.ok) fetchUsers(search);
     else alert("Delete failed");
   }
 
@@ -78,7 +78,7 @@ export default function AdminUsersPage() {
     });
     if (res.ok) {
       setEditUser(null);
-      fetchUsers();
+      fetchUsers(search);
     } else {
       const data = await res.json();
       alert(data.error);
@@ -113,7 +113,7 @@ export default function AdminUsersPage() {
       {/* Add Form */}
       {showAdd && (
         <form onSubmit={handleAdd} className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6 grid sm:grid-cols-2 gap-4">
-          <h3 className="sm:col-span-2 font-bold text-slate-900">Manual User Entry (No password required - default 123456)</h3>
+          <h3 className="sm:col-span-2 font-bold text-slate-900">Manual attendee entry (no password needed)</h3>
           <input placeholder="Full Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="px-4 py-2.5 rounded-xl border text-sm" />
           <input placeholder="Phone *" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="px-4 py-2.5 rounded-xl border text-sm" />
           <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="px-4 py-2.5 rounded-xl border text-sm" />
