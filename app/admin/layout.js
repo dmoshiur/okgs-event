@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/app/components/Icons";
+import CornerFrame from "@/app/components/CornerFrame";
 import SupportContact from "@/app/components/SupportContact";
 import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
 
@@ -44,12 +45,12 @@ function isActive(pathname, item) {
 
 function Avatar({ name, className = "" }) {
   return (
-    <div
-      className={`flex shrink-0 items-center justify-center rounded-full bg-amber-400 font-black text-slate-900 ${className}`}
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-xs bg-gold font-black text-ink-950 ${className}`}
       aria-hidden="true"
     >
       {(name || "A").charAt(0).toUpperCase()}
-    </div>
+    </span>
   );
 }
 
@@ -103,8 +104,9 @@ export default function AdminLayout({ children }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white/60">
-        Loading admin...
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-ink-950 text-white/60">
+        <span className="h-6 w-6 animate-spin rounded-full border border-white/20 border-t-gold" />
+        <p className="eyebrow eyebrow-light mb-0">Loading admin console</p>
       </div>
     );
   }
@@ -118,18 +120,31 @@ export default function AdminLayout({ children }) {
   const supportPhone = config?.support_phone || DEFAULT_SUPPORT_PHONE;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Desktop sidebar */}
+    <div className="min-h-screen bg-paper text-[#1b2430]">
+      {/* Desktop sidebar — deep academic ink chrome. */}
       <aside
-        className={`no-print fixed inset-y-0 left-0 z-40 hidden flex-col bg-slate-950 text-white transition-[width] duration-200 lg:flex ${
+        className={`no-print fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/5 bg-ink-950 text-white transition-[width] duration-200 lg:flex ${
           collapsed ? "w-20" : "w-64"
         }`}
       >
-        <div className={`flex items-center gap-3 border-b border-white/10 p-5 ${collapsed ? "justify-center" : ""}`}>
-          <img src={logo} alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-1" />
+        <div
+          className={`relative flex items-center gap-3 border-b border-white/10 p-5 ${
+            collapsed ? "justify-center" : ""
+          }`}
+        >
+          <img
+            src={logo}
+            alt=""
+            className="h-10 w-10 shrink-0 rounded-xs border border-white/10 bg-white object-contain p-1"
+          />
           {!collapsed ? (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-black tracking-wide">{schoolName}</p>
+              <p className="truncate font-display text-[13px] font-semibold tracking-wide text-white">
+                {schoolName}
+              </p>
+              <p className="truncate text-[10px] uppercase tracking-[0.2em] text-gold-soft">
+                Event Console
+              </p>
             </div>
           ) : null}
           <button
@@ -137,7 +152,9 @@ export default function AdminLayout({ children }) {
             onClick={() => setCollapsed((value) => !value)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-expanded={!collapsed}
-            className={`shrink-0 rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white ${collapsed ? "absolute -right-3 top-6 border border-white/10 bg-slate-950" : ""}`}
+            className={`shrink-0 rounded-xs p-1.5 text-white/60 hover:bg-white/10 hover:text-white ${
+              collapsed ? "absolute -right-3 top-6 border border-white/10 bg-ink-950" : ""
+            }`}
           >
             <Icon name={collapsed ? "chevronRight" : "chevronLeft"} className="h-4 w-4" />
           </button>
@@ -145,7 +162,10 @@ export default function AdminLayout({ children }) {
 
         {!collapsed ? (
           <div className="px-4 pt-4">
-            <label htmlFor="active-event" className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">
+            <label
+              htmlFor="active-event"
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40"
+            >
               Active event
             </label>
             <div className="relative mt-2">
@@ -153,11 +173,11 @@ export default function AdminLayout({ children }) {
                 id="active-event"
                 value={eventTitle}
                 onChange={() => {}}
-                className="w-full appearance-none rounded-xl border border-white/10 bg-slate-900 py-2.5 pl-3 pr-9 text-sm font-semibold text-white outline-none focus:border-amber-400"
+                className="w-full appearance-none rounded-xs border border-gold/25 bg-ink-900 py-2.5 pl-3 pr-9 text-sm font-semibold text-white outline-none focus:border-gold"
               >
                 <option value={eventTitle}>{eventTitle}</option>
               </select>
-              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/50">
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gold-soft">
                 <Icon name="chevronDown" className="h-4 w-4" />
               </span>
             </div>
@@ -165,7 +185,7 @@ export default function AdminLayout({ children }) {
         ) : null}
 
         <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Admin navigation">
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {PRIMARY_NAV.map((item) => {
               const active = isActive(pathname, item);
               return (
@@ -174,11 +194,11 @@ export default function AdminLayout({ children }) {
                     href={item.href}
                     title={collapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
-                      collapsed ? "justify-center" : ""
-                    } ${active ? "bg-amber-400 font-bold text-slate-900" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                    className={`nav-item ${collapsed ? "justify-center" : ""} ${
+                      active ? "nav-item-active" : ""
+                    }`}
                   >
-                    <Icon name={item.icon} className="h-5 w-5 shrink-0" />
+                    <Icon name={item.icon} className="h-[18px] w-[18px] shrink-0" />
                     {!collapsed ? <span>{item.label}</span> : null}
                   </Link>
                 </li>
@@ -187,11 +207,13 @@ export default function AdminLayout({ children }) {
           </ul>
 
           {!collapsed ? (
-            <p className="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Tools</p>
+            <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+              Tools
+            </p>
           ) : (
             <div className="my-4 border-t border-white/10" />
           )}
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {tools.map((item) => {
               const active = isActive(pathname, item);
               return (
@@ -200,9 +222,9 @@ export default function AdminLayout({ children }) {
                     href={item.href}
                     title={collapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
-                      collapsed ? "justify-center" : ""
-                    } ${active ? "bg-white/10 font-semibold text-white" : "text-white/55 hover:bg-white/5 hover:text-white"}`}
+                    className={`nav-item ${collapsed ? "justify-center" : ""} ${
+                      active ? "nav-item-active" : ""
+                    }`}
                   >
                     <Icon name={item.icon} className="h-4 w-4 shrink-0" />
                     {!collapsed ? <span>{item.label}</span> : null}
@@ -214,11 +236,12 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {!collapsed ? (
-          <div className="mx-3 mb-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/70">
-            <p className="flex items-center gap-2 font-bold text-white">
-              <Icon name="help" className="h-4 w-4 text-amber-400" /> Help &amp; support
+          <div className="relative mx-3 mb-3 border border-white/10 bg-white/[0.04] p-4 text-xs text-white/70">
+            <CornerFrame size={26} inset={6} tone="gold-soft" />
+            <p className="relative flex items-center gap-2 font-bold text-white">
+              <Icon name="help" className="h-4 w-4 text-gold" /> Help &amp; support
             </p>
-            <SupportContact phone={supportPhone} className="mt-2 leading-5 text-white/60" />
+            <SupportContact phone={supportPhone} className="relative mt-2 leading-5 text-white/60" />
           </div>
         ) : null}
 
@@ -226,8 +249,8 @@ export default function AdminLayout({ children }) {
           <Avatar name={user?.username} className="h-10 w-10 text-sm" />
           {!collapsed ? (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold">{roleLabel}</p>
-              <p className="truncate text-[11px] text-white/50">{user?.username} · Profile</p>
+              <p className="truncate text-sm font-semibold text-white">{roleLabel}</p>
+              <p className="truncate text-[11px] text-white/45">{user?.username} · Profile</p>
             </div>
           ) : null}
           <button
@@ -235,7 +258,7 @@ export default function AdminLayout({ children }) {
             onClick={logout}
             aria-label="Sign out"
             title="Sign out"
-            className={`flex items-center gap-2 rounded-xl border border-white/15 text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white ${
+            className={`flex items-center gap-2 rounded-xs border border-white/15 text-xs font-semibold text-white/80 hover:border-gold/50 hover:bg-white/10 hover:text-white ${
               collapsed ? "p-2" : "px-3 py-2"
             }`}
           >
@@ -246,12 +269,14 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Mobile header */}
-      <header className="no-print fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 lg:hidden">
+      <header className="no-print fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-line bg-surface px-4 lg:hidden">
         <div className="flex min-w-0 items-center gap-3">
-          <img src={logo} alt="" className="h-9 w-9 shrink-0 rounded-xl object-contain" />
+          <img src={logo} alt="" className="h-9 w-9 shrink-0 rounded-xs border border-line object-contain" />
           <div className="min-w-0">
-            <p className="truncate text-xs font-black leading-tight text-slate-900">{schoolName}</p>
-            <p className="truncate text-[11px] leading-tight text-slate-500">{eventTitle}</p>
+            <p className="truncate font-display text-[12.5px] font-semibold leading-tight text-ink-900">
+              {schoolName}
+            </p>
+            <p className="truncate text-[11px] leading-tight text-gold-deep">{eventTitle}</p>
           </div>
         </div>
         <Avatar name={user?.username} className="h-9 w-9 text-xs" />
@@ -260,7 +285,7 @@ export default function AdminLayout({ children }) {
       {/* Mobile bottom navigation */}
       <nav
         aria-label="Mobile navigation"
-        className="no-print fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-5 items-end border-t border-slate-200 bg-white pb-1 lg:hidden"
+        className="no-print fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-5 items-end border-t border-line bg-surface pb-1 lg:hidden"
       >
         {MOBILE_TABS.map((item) => {
           const active = isActive(pathname, item);
@@ -270,8 +295,8 @@ export default function AdminLayout({ children }) {
                 <Link
                   href={item.href}
                   aria-label="Scan QR passes"
-                  className={`-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-amber-400 shadow-lg ring-4 ring-white ${
-                    active ? "ring-amber-200" : ""
+                  className={`-mt-6 flex h-14 w-14 items-center justify-center rounded-xs bg-ink-950 text-gold shadow-floated ring-4 ring-paper ${
+                    active ? "ring-gold-soft" : ""
                   }`}
                 >
                   <Icon name="scan" className="h-6 w-6" />
@@ -285,7 +310,7 @@ export default function AdminLayout({ children }) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={`flex flex-col items-center gap-1 py-2 text-[10px] font-semibold ${
-                active ? "text-slate-950" : "text-slate-400"
+                active ? "text-ink-950" : "text-muted-2"
               }`}
             >
               <Icon name={item.icon} className="h-5 w-5" />
@@ -298,7 +323,7 @@ export default function AdminLayout({ children }) {
           onClick={() => setMoreOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={moreOpen}
-          className="flex flex-col items-center gap-1 py-2 text-[10px] font-semibold text-slate-400"
+          className="flex flex-col items-center gap-1 py-2 text-[10px] font-semibold text-muted-2"
         >
           <Icon name="more" className="h-5 w-5" />
           More
@@ -312,12 +337,17 @@ export default function AdminLayout({ children }) {
             type="button"
             aria-label="Close menu"
             onClick={() => setMoreOpen(false)}
-            className="absolute inset-0 bg-slate-950/50"
+            className="absolute inset-0 bg-ink-950/60"
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-2xl">
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto border-t border-line bg-surface p-5 pb-8 shadow-floated">
             <div className="mb-4 flex items-center justify-between">
-              <p className="font-bold text-slate-900">More</p>
-              <button type="button" onClick={() => setMoreOpen(false)} aria-label="Close" className="rounded-full p-2 text-slate-500 hover:bg-slate-100">
+              <p className="font-display font-semibold text-ink-900">More</p>
+              <button
+                type="button"
+                onClick={() => setMoreOpen(false)}
+                aria-label="Close"
+                className="rounded-xs p-2 text-muted hover:bg-paper-2"
+              >
                 <Icon name="close" className="h-5 w-5" />
               </button>
             </div>
@@ -326,22 +356,32 @@ export default function AdminLayout({ children }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 p-3 text-center text-[11px] font-semibold text-slate-700"
+                  className="flex flex-col items-center gap-2 rounded-xs border border-line p-3 text-center text-[11px] font-semibold text-body-soft hover:border-gold"
                 >
-                  <Icon name={item.icon} className="h-5 w-5 text-slate-900" />
+                  <Icon name={item.icon} className="h-5 w-5 text-ink-900" />
                   {item.label}
                 </Link>
               ))}
             </div>
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-xs text-slate-600">
-              <p className="font-bold text-slate-900">Help &amp; support</p>
-              <SupportContact phone={supportPhone} className="mt-2 leading-5" />
+            <div className="mt-5">
+              <label htmlFor="mobile-active-event" className="field-label">
+                Active event
+              </label>
+              <select
+                id="mobile-active-event"
+                value={eventTitle}
+                onChange={() => {}}
+                className="select mt-2 text-sm font-semibold"
+              >
+                <option value={eventTitle}>{eventTitle}</option>
+              </select>
             </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 py-3 text-sm font-bold text-white"
-            >
+            <div className="relative mt-5 border border-line bg-paper-2 p-4 text-xs text-muted">
+              <CornerFrame size={22} inset={5} tone="gold" />
+              <p className="relative font-bold text-ink-900">Help &amp; support</p>
+              <SupportContact phone={supportPhone} className="relative mt-2 leading-5" />
+            </div>
+            <button type="button" onClick={logout} className="btn btn-ink mt-4 w-full">
               <Icon name="logout" className="h-4 w-4" /> Sign out
             </button>
           </div>
@@ -350,11 +390,11 @@ export default function AdminLayout({ children }) {
 
       {/* Content */}
       <main
-        className={`admin-content min-h-screen pb-24 pt-20 transition-[margin] duration-200 lg:pb-0 lg:pt-0 ${
+        className={`admin-content min-h-screen bg-paper pb-24 pt-20 transition-[margin] duration-200 lg:pb-0 lg:pt-0 ${
           collapsed ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
-        <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="mx-auto max-w-[1240px] p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
     </div>
   );

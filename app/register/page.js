@@ -2,6 +2,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { divisions, getDistricts, getUpazilas, getUnions } from "@/data/bd-geo";
+import CornerFrame from "@/app/components/CornerFrame";
+import SupportContact, { toDialNumber, toWhatsAppNumber } from "@/app/components/SupportContact";
+import { Icon } from "@/app/components/Icons";
+import { DEFAULT_SUPPORT_PHONE, THEME_VIDEO_URL } from "@/lib/constants";
+
+const REQUIRED_NOTE = "Required fields are marked with *";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -105,41 +111,69 @@ export default function RegisterPage() {
     }
   }
 
+  const supportPhone = DEFAULT_SUPPORT_PHONE;
+
   if (successData) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-[24px] shadow-2xl overflow-hidden border border-slate-200">
-          <div className="bg-slate-900 p-6 text-center">
-            <div className="w-16 h-16 mx-auto bg-emerald-400 rounded-full flex items-center justify-center text-2xl mb-3">✓</div>
-            <h2 className="text-white font-black text-xl">Registration Successful!</h2>
-            <p className="text-white/60 text-sm mt-1">Your QR Pass is ready</p>
-          </div>
-          <div className="p-6">
+      <main className="relative flex min-h-screen items-center justify-center gap-6 bg-ink-950 px-4 py-12 sm:px-6">
+        <div aria-hidden="true" className="fixed inset-0 bg-[radial-gradient(900px_520px_at_108%_-12%,rgba(29,91,191,0.28),transparent_58%)]" />
+
+        <section className="reveal relative z-10 w-full max-w-[520px] border border-line-strong bg-surface-warm shadow-floated">
+          <CornerFrame size={130} inset={14} tone="gold" className="hidden sm:block" />
+          <CornerFrame size={54} inset={10} tone="gold" className="sm:hidden" />
+
+          <header className="relative border-b border-line bg-ink-950 px-6 py-6 text-center text-white">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xs bg-gold text-ink-950">
+              <Icon name="check" className="h-6 w-6" strokeWidth={2.2} />
+            </span>
+            <p className="eyebrow eyebrow-light mt-4 justify-center">
+              <span>Registration complete</span>
+            </p>
+            <h1 className="font-display text-2xl font-semibold text-[#f7f3e9]">Your QR pass is ready</h1>
+            <p className="mt-1 text-xs text-white/60">
+              Keep this code — it is your identity at the gate and canteen.
+            </p>
+          </header>
+
+          <div className="relative p-6">
             <div className="text-center">
-              <img src={successData.photo_url} alt="User" className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100" />
-              <h3 className="font-bold text-slate-900 mt-3 text-lg">{successData.name}</h3>
-              <p className="text-xs text-slate-500">{successData.user_code} • {successData.phone}</p>
+              <img
+                src={successData.photo_url}
+                alt="Attendee"
+                className="mx-auto h-24 w-24 rounded-xs border border-line object-cover"
+              />
+              <h2 className="mt-3 font-display text-lg font-semibold text-ink-900">{successData.name}</h2>
+              <p className="text-xs text-muted">
+                {successData.user_code} • {successData.phone}
+              </p>
             </div>
 
-            <div className="mt-6 bg-slate-50 rounded-2xl p-4 border border-slate-200">
-              <p className="text-[11px] font-bold tracking-widest uppercase text-slate-500 text-center mb-3">Your QR Pass</p>
-              <img src={successData.qr_code_url} alt="QR" className="w-48 h-48 mx-auto rounded-xl border-4 border-slate-900" />
-              <p className="text-center text-xs text-slate-500 mt-3">Show this at entry gate. Code: <strong className="text-slate-900">{successData.user_code}</strong></p>
+            <div className="relative mt-6 border border-line bg-paper-2 p-4">
+              <CornerFrame size={26} inset={7} tone="gold" />
+              <p className="eyebrow relative justify-center">
+                <span>Your QR pass</span>
+              </p>
+              <img
+                src={successData.qr_code_url}
+                alt="QR pass"
+                className="mx-auto h-48 w-48 border border-ink-900 bg-white p-1"
+              />
+              <p className="relative mt-3 text-center text-xs text-muted">
+                Show this at the entry gate. Code:{" "}
+                <strong className="font-bold text-ink-900">{successData.user_code}</strong>
+              </p>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                onClick={() => window.print()}
-                className="bg-slate-900 text-white py-3 rounded-xl text-sm font-bold"
-              >
-                Print Pass
+            <div className="relative mt-6 grid grid-cols-2 gap-3">
+              <button onClick={() => window.print()} className="btn btn-ink">
+                Print pass
               </button>
-              <Link href="/login" className="bg-amber-400 text-slate-900 py-3 rounded-xl text-sm font-bold text-center">
-                Login to Dashboard
+              <Link href="/login" className="btn btn-gold">
+                Open dashboard
               </Link>
             </div>
 
-            <p className="text-center text-[11px] text-slate-500 mt-4">
+            <p className="relative mt-4 text-center text-[11px] leading-5 text-muted">
               {emailStatus === "sent"
                 ? `Your QR pass was emailed to ${successData.email}.`
                 : emailStatus === "not_configured"
@@ -149,132 +183,324 @@ export default function RegisterPage() {
                     : "You can sign in with your phone number and the password you created."}
             </p>
 
-            <div className="mt-4 text-center">
-              <Link href="/login" className="text-xs text-slate-500 hover:text-slate-900">← Back to Sign In</Link>
+            <div className="relative mt-5 border-t border-line pt-4 text-center">
+              <SupportContact phone={supportPhone} className="text-[11px] leading-5 text-muted" />
+              <Link href="/login" className="link-underline mt-3 inline-block text-xs">
+                ← Back to sign in
+              </Link>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-5 min-h-screen">
-        {/* Left info */}
-        <div className="lg:col-span-2 bg-slate-950 p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden">
-          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-20">
-            <source src="https://res.cloudinary.com/tt7oyjd1/video/upload/v1791960191/okgs/film/odyssey-montage-v6.mp4" type="video/mp4" />
+    <div className="min-h-screen bg-paper">
+      <div className="mx-auto grid min-h-screen max-w-[1380px] lg:grid-cols-5">
+        {/* Brand panel */}
+        <aside className="relative isolate overflow-hidden bg-ink-950 p-8 lg:col-span-2 lg:p-12">
+          <video
+            aria-hidden="true"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 -z-10 h-full w-full object-cover opacity-25"
+          >
+            <source src={THEME_VIDEO_URL} type="video/mp4" />
           </video>
-          <div className="relative z-10">
-            <Link href="/login" className="text-white/60 hover:text-white text-sm">← Sign in</Link>
-            <div className="mt-10">
-              <div className="w-12 h-12 rounded-xl bg-amber-400 flex items-center justify-center font-black text-slate-900">OK</div>
-              <h1 className="text-4xl font-black text-white mt-6 leading-tight">Join the <span className="text-amber-400">Genesis</span> Reunion</h1>
-              <p className="text-white/60 text-sm mt-4 leading-relaxed">Register in 60 seconds. Get instant QR pass, email confirmation, and A4 printable ticket. Lightweight, fast, works on mid-range devices.</p>
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-ink-950/70" />
+          <CornerFrame size={120} inset={18} tone="gold-soft" className="hidden lg:block" />
+
+          <div className="relative flex h-full flex-col justify-between">
+            <div>
+              <Link href="/login" className="link-underline text-sm text-white/60">
+                ← Sign in
+              </Link>
+
+              <img
+                src="/okgs-mark.svg"
+                alt=""
+                className="mt-10 h-14 w-14 rounded-xs border border-white/10 bg-white object-contain p-1.5"
+              />
+
+              <p className="eyebrow eyebrow-light mt-6">
+                <span>Public registration · /register</span>
+              </p>
+              <h1 className="font-display text-[clamp(2rem,3.6vw,2.9rem)] font-semibold leading-[1.12] text-[#f5f1e6]">
+                Open your <em className="italic text-gold-soft">event pass</em> in under a minute
+              </h1>
+              <p className="mt-4 max-w-[46ch] text-[0.95rem] leading-7 text-[#a3b0c5]">
+                Register as an attendee to receive a unique ID, a QR gate pass, and an A4 printable
+                ticket. No paperwork, no queue at the desk.
+              </p>
+
+              <ul className="mt-8 space-y-3 text-sm text-[#c4cede]">
+                <li className="flex items-center gap-3">
+                  <span className="text-gold-soft">01</span> Fill the Bangladesh division → union address
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-gold-soft">02</span> Upload a photo (square crop via Cloudinary)
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-gold-soft">03</span> Receive your QR pass instantly on screen
+                </li>
+              </ul>
             </div>
 
-            <div className="mt-10 space-y-4">
-              <div className="flex gap-3 text-sm text-white/80"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">1</span> Fill Bangladesh cascading address</div>
-              <div className="flex gap-3 text-sm text-white/80"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">2</span> Upload photo (auto square crop via Cloudinary)</div>
-              <div className="flex gap-3 text-sm text-white/80"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">3</span> Get QR + Email instantly</div>
+            <div className="relative mt-10 border-t border-white/10 pt-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/40">
+                Technical support
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/60">
+                <a href={`tel:${toDialNumber(supportPhone)}`} className="font-bold text-gold-soft hover:underline">
+                  {supportPhone}
+                </a>{" "}
+                (
+                <a href={`tel:${toDialNumber(supportPhone)}`} className="hover:text-white hover:underline">
+                  Call
+                </a>
+                /
+                <a
+                  href={`https://wa.me/${toWhatsAppNumber(supportPhone)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white hover:underline"
+                >
+                  WhatsApp
+                </a>
+                )
+              </p>
             </div>
           </div>
-          <div className="relative z-10 mt-10">
-            <p className="text-white/30 text-[11px]">Public Poster QR Registration Link • /register</p>
-          </div>
-        </div>
+        </aside>
 
         {/* Form */}
-        <div className="lg:col-span-3 p-6 lg:p-12 bg-slate-50 overflow-y-auto">
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-black text-slate-900">Registration Form</h2>
-            <p className="text-sm text-slate-500 mt-1">Required fields marked with *</p>
+        <div className="lg:col-span-3 lg:p-12 lg:pl-14">
+          <div className="mx-auto max-w-3xl p-6 lg:p-0">
+            <p className="eyebrow">Attendee registration</p>
+            <h2 className="font-display text-[clamp(1.7rem,3vw,2.3rem)] font-semibold tracking-tight text-ink-950">
+              Event registration form
+            </h2>
+            <p className="page-lead">{REQUIRED_NOTE}</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               {/* Photo */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Photo Upload * (Square Crop)</label>
-                <div className="mt-3 flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
-                    {photoPreview ? <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" /> : <span className="text-slate-400 text-xs">No Photo</span>}
-                  </div>
+              <section className="relative border border-line bg-surface p-6">
+                <CornerFrame size={40} inset={10} tone="gold" />
+                <label className="eyebrow relative mb-0">
+                  <span>Photo upload * (square crop)</span>
+                </label>
+                <div className="relative mt-4 flex flex-wrap items-center gap-5">
+                  <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xs border border-dashed border-line-strong bg-paper-2">
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Icon name="camera" className="h-6 w-6 text-muted-2" />
+                    )}
+                  </span>
                   <div>
-                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} className="text-sm" required />
-                    <p className="text-[11px] text-slate-400 mt-1">JPEG, PNG, or WebP. Max 5 MB; uploaded to Cloudinary as a square crop.</p>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handlePhoto}
+                      required
+                      className="block w-full text-sm text-body-soft file:mr-3 file:border file:border-line-strong file:bg-paper-2 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-ink-900"
+                    />
+                    <p className="field-help mt-2">
+                      JPEG, PNG, or WebP. Maximum 5 MB; stored on Cloudinary as a square crop.
+                    </p>
                   </div>
                 </div>
-              </div>
+              </section>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Full Name *</label>
-                  <input name="name" value={form.name} onChange={handleChange} required className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="Md. Example Hossain" />
+              {/* Identity */}
+              <section className="relative border border-line bg-surface p-6">
+                <CornerFrame size={40} inset={10} tone="gold" />
+                <p className="eyebrow relative">
+                  <span>Identity</span>
+                </p>
+                <div className="relative grid gap-4 sm:grid-cols-2">
+                  <label className="field sm:col-span-2">
+                    <span className="field-label">Full name *</span>
+                    <input
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      required
+                      className="input"
+                      placeholder="Md. Example Hossain"
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Phone number *</span>
+                    <input
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={form.phone}
+                      onChange={handleChange}
+                      required
+                      minLength={7}
+                      maxLength={20}
+                      pattern="[+0-9(). -]{7,20}"
+                      className="input"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Password setup *</span>
+                    <input
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={form.password}
+                      onChange={handleChange}
+                      required
+                      minLength={8}
+                      maxLength={72}
+                      className="input"
+                      placeholder="At least 8 characters"
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Email (optional)</span>
+                    <input
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Institute name (optional)</span>
+                    <input
+                      name="institute"
+                      value={form.institute}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="OKGS / your institute"
+                    />
+                  </label>
+                  <label className="field sm:col-span-2">
+                    <span className="field-label">SSC batch / year (optional)</span>
+                    <input
+                      name="ssc_batch"
+                      value={form.ssc_batch}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="2015, 2020 etc."
+                    />
+                  </label>
                 </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Phone Number *</label>
-                  <input name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={handleChange} required minLength={7} maxLength={20} pattern="[+0-9(). -]{7,20}" className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="01XXXXXXXXX" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Password Setup *</label>
-                  <input name="password" type="password" autoComplete="new-password" value={form.password} onChange={handleChange} required minLength={8} maxLength={72} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="At least 8 characters" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Email (Optional)</label>
-                  <input name="email" type="email" value={form.email} onChange={handleChange} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="you@example.com" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Institute Name (Optional)</label>
-                  <input name="institute" value={form.institute} onChange={handleChange} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="OKGS / Your Institute" />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500">SSC Batch / Year (Optional)</label>
-                  <input name="ssc_batch" value={form.ssc_batch} onChange={handleChange} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="2015, 2020 etc" />
-                </div>
-              </div>
+              </section>
 
-              {/* Cascading Address */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200">
-                <h3 className="font-bold text-slate-900 text-sm mb-4">Address: Bangladesh Administrative Structure *</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Division *</label>
-                    <select name="division" value={form.division} onChange={handleChange} required className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm bg-white">
-                      <option value="">Select Division</option>
-                      {divisions.map((d) => <option key={d} value={d}>{d}</option>)}
+              {/* Address */}
+              <section className="relative border border-line bg-surface p-6">
+                <CornerFrame size={40} inset={10} tone="gold" />
+                <p className="eyebrow relative">
+                  <span>Bangladesh administrative address *</span>
+                </p>
+                <div className="relative grid gap-4 sm:grid-cols-2">
+                  <label className="field">
+                    <span className="field-label">Division *</span>
+                    <select
+                      name="division"
+                      value={form.division}
+                      onChange={handleChange}
+                      required
+                      className="select"
+                    >
+                      <option value="">Select division</option>
+                      {divisions.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">District *</label>
-                    <select name="district" value={form.district} onChange={handleChange} required disabled={!form.division} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm bg-white disabled:opacity-50">
-                      <option value="">Select District</option>
-                      {districtList.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </label>
+                  <label className="field">
+                    <span className="field-label">District *</span>
+                    <select
+                      name="district"
+                      value={form.district}
+                      onChange={handleChange}
+                      required
+                      disabled={!form.division}
+                      className="select"
+                    >
+                      <option value="">Select district</option>
+                      {districtList.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Upazila *</label>
-                    <select name="upazila" value={form.upazila} onChange={handleChange} required disabled={!form.district} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm bg-white disabled:opacity-50">
-                      <option value="">Select Upazila</option>
-                      {upazilaList.map((u) => <option key={u} value={u}>{u}</option>)}
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Upazila *</span>
+                    <select
+                      name="upazila"
+                      value={form.upazila}
+                      onChange={handleChange}
+                      required
+                      disabled={!form.district}
+                      className="select"
+                    >
+                      <option value="">Select upazila</option>
+                      {upazilaList.map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Union *</label>
-                    <select name="union_name" value={form.union_name} onChange={handleChange} required disabled={!form.upazila} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm bg-white disabled:opacity-50">
-                      <option value="">Select Union</option>
-                      {unionList.map((un) => <option key={un} value={un}>{un}</option>)}
+                  </label>
+                  <label className="field">
+                    <span className="field-label">Union *</span>
+                    <select
+                      name="union_name"
+                      value={form.union_name}
+                      onChange={handleChange}
+                      required
+                      disabled={!form.upazila}
+                      className="select"
+                    >
+                      <option value="">Select union</option>
+                      {unionList.map((un) => (
+                        <option key={un} value={un}>
+                          {un}
+                        </option>
+                      ))}
                     </select>
-                  </div>
+                  </label>
                 </div>
-              </div>
+              </section>
 
-              {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl">{error}</div>}
+              {error ? (
+                <p role="alert" className="alert alert-error">
+                  {error}
+                </p>
+              ) : null}
 
-              <button disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white py-4 rounded-xl font-bold text-sm transition">
-                {loading ? "Registering & Generating QR..." : "Register & Generate QR Pass →"}
+              <button disabled={loading} className="btn btn-ink btn-shine w-full gap-2.5 text-[0.95rem]">
+                {loading ? "Registering & generating QR…" : "Register & generate QR pass"}
+                {!loading ? <Icon name="arrowRight" className="h-4 w-4" /> : null}
               </button>
 
-              <p className="text-center text-xs text-slate-500">Already registered? <Link href="/login" className="font-bold text-slate-900">Login to get your pass</Link></p>
+              <p className="text-center text-xs text-muted">
+                Already registered?{" "}
+                <Link href="/login" className="link-underline text-ink-900">
+                  Sign in to get your pass
+                </Link>
+              </p>
+
+              <div className="relative border border-line bg-paper-2 p-4 text-center">
+                <CornerFrame size={26} inset={7} tone="ink" />
+                <SupportContact phone={supportPhone} className="relative text-[11px] leading-5 text-muted" />
+              </div>
             </form>
           </div>
         </div>

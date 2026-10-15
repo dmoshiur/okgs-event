@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import AuthScreen from "@/app/components/AuthScreen";
+import CornerFrame from "@/app/components/CornerFrame";
+import { Icon } from "@/app/components/Icons";
 
 export default function ResetPasswordPage() {
   const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const [message, setMessage] = useState("");
@@ -46,80 +50,113 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10">
-      <section className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-2xl sm:p-9">
-        <Link href="/login" className="text-xs font-semibold text-slate-500 hover:text-slate-900">
-          ← Back to sign in
-        </Link>
-        <h1 className="mt-7 text-2xl font-black tracking-tight text-slate-950">Choose a new password</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">Use at least 8 characters. The reset link is single-use.</p>
+    <AuthScreen>
+      <section className="reveal relative z-10 w-full max-w-[470px] border border-line-strong bg-surface-warm p-7 shadow-floated sm:p-9">
+        <CornerFrame size={54} inset={10} tone="gold" className="sm:hidden" />
+        <CornerFrame size={130} inset={14} tone="gold" className="hidden sm:block" />
 
-        {ready && !token ? (
-          <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-700" role="alert">
-            This reset link is missing or invalid. Request a new link to continue.
-          </div>
-        ) : null}
-        {message ? (
-          <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800" role="status">
-            {message}
-          </div>
-        ) : null}
-
-        {ready && token && !message ? (
-          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
-            <div>
-              <label htmlFor="new-password" className="text-xs font-semibold text-slate-700">New password</label>
-              <input
-                id="new-password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                minLength={8}
-                maxLength={72}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 text-sm outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
-              />
-            </div>
-            <div>
-              <label htmlFor="confirm-password" className="text-xs font-semibold text-slate-700">Confirm new password</label>
-              <input
-                id="confirm-password"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                required
-                minLength={8}
-                maxLength={72}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3.5 text-sm outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
-              />
-            </div>
-            {error ? (
-              <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {error}
-              </div>
-            ) : null}
-            <button
-              disabled={loading}
-              className="w-full rounded-xl bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-60"
-            >
-              {loading ? "Updating password…" : "Update password"}
-            </button>
-          </form>
-        ) : null}
-
-        {!token && ready ? (
-          <Link href="/forgot-password" className="mt-6 block text-center text-sm font-bold text-amber-800 hover:underline">
-            Request another reset link
+        <div className="relative">
+          <Link href="/login" className="link-underline text-xs">
+            ← Back to sign in
           </Link>
-        ) : null}
-        {message ? (
-          <Link href="/login" className="mt-6 block text-center text-sm font-bold text-amber-800 hover:underline">
-            Continue to sign in
-          </Link>
-        ) : null}
+
+          <p className="eyebrow mt-7">
+            <span>Account recovery</span>
+          </p>
+          <h1 className="font-display text-[30px] font-semibold leading-tight tracking-tight text-ink-950">
+            Choose a new password
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Use at least 8 characters. The reset link is single-use.
+          </p>
+
+          {ready && !token ? (
+            <p role="alert" className="alert alert-error mt-6">
+              This reset link is missing or invalid. Request a new link to continue.
+            </p>
+          ) : null}
+
+          {message ? (
+            <p role="status" className="alert alert-success mt-6">
+              {message}
+            </p>
+          ) : null}
+
+          {ready && token && !message ? (
+            <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+              <label htmlFor="new-password" className="field mb-0">
+                <span className="field-label">New password</span>
+                <div className="relative">
+                  <span className="field-icon">
+                    <Icon name="key" className="h-5 w-5" />
+                  </span>
+                  <input
+                    id="new-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                    minLength={8}
+                    maxLength={72}
+                    className="input input-icon pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="input-affix-btn"
+                  >
+                    <Icon name={showPassword ? "eyeOff" : "eye"} className="h-5 w-5" />
+                  </button>
+                </div>
+              </label>
+
+              <label htmlFor="confirm-password" className="field mb-0">
+                <span className="field-label">Confirm new password</span>
+                <div className="relative">
+                  <span className="field-icon">
+                    <Icon name="key" className="h-5 w-5" />
+                  </span>
+                  <input
+                    id="confirm-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    required
+                    minLength={8}
+                    maxLength={72}
+                    className="input input-icon"
+                  />
+                </div>
+              </label>
+
+              {error ? (
+                <p role="alert" className="alert alert-error">
+                  {error}
+                </p>
+              ) : null}
+
+              <button disabled={loading} className="btn btn-ink btn-shine w-full">
+                {loading ? "Updating password…" : "Update password"}
+              </button>
+            </form>
+          ) : null}
+
+          {!token && ready ? (
+            <Link href="/forgot-password" className="btn btn-gold mt-6 w-full">
+              Request another reset link
+            </Link>
+          ) : null}
+
+          {message ? (
+            <Link href="/login" className="btn btn-gold mt-6 w-full">
+              Continue to sign in
+            </Link>
+          ) : null}
+        </div>
       </section>
-    </main>
+    </AuthScreen>
   );
 }

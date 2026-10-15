@@ -2,6 +2,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/app/components/Icons";
+import CornerFrame from "@/app/components/CornerFrame";
+import SupportContact from "@/app/components/SupportContact";
+import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
 
 const READ_KEY = "okgs-read-notices";
 const FILTERS = ["All", "Science Fair", "Notice", "Update", "Unread"];
@@ -18,25 +21,23 @@ function formatCount(value) {
 function MetricCard({ tone = "light", eyebrow, value, children, className = "" }) {
   const dark = tone === "dark";
   return (
-    <section
-      className={`flex flex-col rounded-2xl border p-5 ${
-        dark ? "border-slate-900 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-900"
-      } ${className}`}
-    >
-      <p className={`text-[11px] font-bold uppercase tracking-[0.16em] ${dark ? "text-amber-300" : "text-slate-500"}`}>
-        {eyebrow}
-      </p>
-      <p className="mt-2 font-serif text-3xl font-bold tracking-tight" aria-label={value === NOT_CONNECTED ? "Not connected" : undefined}>
+    <section className={`stat-card ${dark ? "stat-card-dark" : ""} ${className}`}>
+      <CornerFrame size={dark ? 34 : 28} inset={9} tone={dark ? "gold-soft" : "gold"} />
+      <p className="stat-label relative">{eyebrow}</p>
+      <p
+        className="stat-value relative"
+        aria-label={value === NOT_CONNECTED ? "Not connected" : undefined}
+      >
         {value}
       </p>
-      <div className={`mt-4 space-y-2 text-sm ${dark ? "text-white/70" : "text-slate-600"}`}>{children}</div>
+      <div className="relative mt-4 space-y-2 text-[0.85rem]">{children}</div>
     </section>
   );
 }
 
 function Row({ label, value, strong = false }) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="stat-row">
       <span>{label}</span>
       <span className={strong ? "font-bold" : "font-semibold"}>{value}</span>
     </div>
@@ -53,7 +54,7 @@ function NoticeCard({ notice, read, onToggle, onDelete, deleting }) {
   }
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4">
+    <article className="border border-line bg-surface p-4">
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -62,37 +63,33 @@ function NoticeCard({ notice, read, onToggle, onDelete, deleting }) {
           className="flex min-w-0 flex-1 items-start gap-3 text-left"
         >
           <span
-            className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${read ? "bg-slate-300" : "bg-amber-500"}`}
+            className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${read ? "bg-line-strong" : "bg-gold"}`}
             title={read ? "Read" : "Unread"}
           />
           <span className="min-w-0 flex-1">
             <span className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-slate-900">{notice.title}</span>
-              {notice.urgent ? (
-                <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                  Urgent
-                </span>
-              ) : null}
+              <span className="font-display text-[1.02rem] font-semibold text-ink-900">{notice.title}</span>
+              {notice.urgent ? <span className="tag tag-error uppercase">Urgent</span> : null}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-800">{notice.category}</span>
+            <span className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+              <span className="tag tag-gold">{notice.category}</span>
               {date ? <span>{date}</span> : null}
             </span>
           </span>
-          <Icon name={open ? "chevronUp" : "chevronDown"} className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+          <Icon name={open ? "chevronUp" : "chevronDown"} className="mt-1 h-4 w-4 shrink-0 text-muted-2" />
         </button>
         <button
           type="button"
           onClick={() => onDelete(notice.id)}
           disabled={deleting}
           aria-label={`Delete notice: ${notice.title}`}
-          className="rounded-full p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
+          className="rounded-xs p-1.5 text-muted-2 hover:bg-state-error-bg hover:text-state-error disabled:opacity-40"
         >
           <Icon name="trash" className="h-4 w-4" />
         </button>
       </div>
       {open ? (
-        <p className="mt-3 whitespace-pre-line border-t border-slate-100 pt-3 text-sm leading-6 text-slate-600">
+        <p className="mt-3 whitespace-pre-line border-t border-line pt-3 text-sm leading-6 text-body-soft">
           {notice.body || "No further details."}
         </p>
       ) : null}
@@ -111,6 +108,7 @@ export default function AdminDashboard() {
   const [deletingId, setDeletingId] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loadError, setLoadError] = useState("");
+  const [supportPhone, setSupportPhone] = useState(DEFAULT_SUPPORT_PHONE);
 
   const loadStats = useCallback(async () => {
     try {
@@ -135,6 +133,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadStats();
     loadNotices();
+    fetch("/api/admin/config")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((config) => config?.support_phone && setSupportPhone(config.support_phone))
+      .catch(() => {});
     try {
       const stored = JSON.parse(window.localStorage.getItem(READ_KEY) || "[]");
       setReadIds(new Set(Array.isArray(stored) ? stored : []));
@@ -204,32 +206,41 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-serif text-4xl font-bold tracking-tight text-slate-950">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">Live overview of collections, students, and gate activity.</p>
+          <p className="eyebrow">Event console</p>
+          <h1 className="font-display text-[clamp(2rem,4vw,2.9rem)] font-semibold leading-tight tracking-tight text-ink-950">
+            Dashboard
+          </h1>
+          <p className="page-lead">Live overview of collections, students, and gate activity.</p>
         </div>
-        <Link
-          href="/admin/scan"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-slate-800"
-        >
+        <Link href="/admin/scan" className="btn btn-ink btn-shine self-start sm:self-auto">
           <Icon name="scan" className="h-4 w-4" /> Open gate scanner
         </Link>
       </div>
 
       {loadError ? (
-        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <p role="alert" className="alert alert-error">
           {loadError}
-        </div>
+        </p>
       ) : null}
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <MetricCard tone="dark" eyebrow="Fair Collections (Paid)" value={`৳ ${NOT_CONNECTED}`}>
           <div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0} aria-label="Paid share">
-              <div className="h-full w-0 rounded-full bg-amber-400" />
+            <div
+              className="meter"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={0}
+              aria-label="Paid share"
+            >
+              <i style={{ width: "0%" }} />
             </div>
             <p className="mt-2 text-xs">Paid share — not connected yet</p>
           </div>
-          <p className="border-t border-white/10 pt-3 text-xs">Class-wise balance appears once fee records exist.</p>
+          <p className="border-t border-white/10 pt-3 text-xs">
+            Class-wise balance appears once fee records exist.
+          </p>
         </MetricCard>
 
         <MetricCard eyebrow="Current Balance" value={`৳ ${NOT_CONNECTED}`}>
@@ -237,20 +248,23 @@ export default function AdminDashboard() {
           <Row label="Guests" value={NOT_CONNECTED} />
           <Row label="Lunch" value={NOT_CONNECTED} />
           <Row label="Expenses" value={NOT_CONNECTED} />
-          <div className="border-t border-slate-100 pt-2">
+          <div className="border-t border-line pt-2">
             <Row label="Surplus" value={NOT_CONNECTED} strong />
           </div>
         </MetricCard>
 
         <MetricCard eyebrow="Pending Funds" value={`৳ ${NOT_CONNECTED}`}>
-          <p>Amounts awaiting verification will be listed here.</p>
+          <p className="text-muted">Amounts awaiting verification will be listed here.</p>
         </MetricCard>
 
         <MetricCard eyebrow="Expenses" value={`৳ ${NOT_CONNECTED}`}>
-          <p>Total event expenses across all approved memos.</p>
+          <p className="text-muted">Total event expenses across all approved memos.</p>
         </MetricCard>
 
-        <MetricCard eyebrow="Students Paid" value={`${NOT_CONNECTED} / ${formatCount(stats?.registered)}`}>
+        <MetricCard
+          eyebrow="Students Paid"
+          value={`${NOT_CONNECTED} / ${formatCount(stats?.registered)}`}
+        >
           <Row label="Paid" value={NOT_CONNECTED} />
           <Row label="Unpaid roster" value={NOT_CONNECTED} />
           <Row label="Registered attendees" value={formatCount(stats?.registered)} strong />
@@ -264,24 +278,35 @@ export default function AdminDashboard() {
         </MetricCard>
       </div>
 
-      <section aria-labelledby="notices-heading" className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section
+        aria-labelledby="notices-heading"
+        className="relative border border-line bg-surface p-5 sm:p-6"
+      >
+        <CornerFrame size={46} inset={10} tone="gold" className="hidden sm:block" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 id="notices-heading" className="font-serif text-2xl font-bold text-slate-950">Notices &amp; Updates</h2>
-            <p className="text-xs text-slate-500">{unreadCount} unread on this device</p>
+            <p className="eyebrow">Notice board</p>
+            <h2 id="notices-heading" className="font-display text-2xl font-semibold text-ink-950">
+              Notices &amp; Updates
+            </h2>
+            <p className="mt-1 text-xs text-muted">{unreadCount} unread on this device</p>
           </div>
           <button
             type="button"
             onClick={() => setShowForm((value) => !value)}
             aria-expanded={showForm}
-            className="inline-flex items-center gap-2 self-start rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="btn btn-outline btn-sm self-start"
           >
             <Icon name={showForm ? "close" : "plus"} className="h-4 w-4" />
             {showForm ? "Cancel" : "New notice"}
           </button>
         </div>
 
-        <div role="tablist" aria-label="Filter notices" className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        <div
+          role="tablist"
+          aria-label="Filter notices"
+          className="relative mt-5 flex gap-2 overflow-x-auto pb-1"
+        >
           {FILTERS.map((item) => {
             const active = filter === item;
             return (
@@ -291,9 +316,7 @@ export default function AdminDashboard() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setFilter(item)}
-                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                  active ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                className={`tab ${active ? "tab-active" : ""}`}
               >
                 {item}
                 {item === "Unread" && unreadCount > 0 ? ` (${unreadCount})` : ""}
@@ -303,54 +326,52 @@ export default function AdminDashboard() {
         </div>
 
         {showForm ? (
-          <form onSubmit={publish} className="mt-5 grid gap-4 rounded-2xl bg-slate-50 p-4 md:grid-cols-2">
-            <label className="block text-xs font-semibold text-slate-700 md:col-span-2">
-              Title
+          <form
+            onSubmit={publish}
+            className="relative mt-5 grid gap-4 border border-line bg-paper-2 p-4 md:grid-cols-2"
+          >
+            <label className="field md:col-span-2">
+              <span className="field-label">Title</span>
               <input
                 required
                 maxLength={160}
                 value={draft.title}
                 onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-amber-500"
+                className="input"
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-700 md:col-span-2">
-              Details
+            <label className="field md:col-span-2">
+              <span className="field-label">Details</span>
               <textarea
                 rows={3}
                 maxLength={2000}
                 value={draft.body}
                 onChange={(event) => setDraft({ ...draft, body: event.target.value })}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-amber-500"
+                className="textarea"
               />
             </label>
-            <label className="block text-xs font-semibold text-slate-700">
-              Category
+            <label className="field">
+              <span className="field-label">Category</span>
               <select
                 value={draft.category}
                 onChange={(event) => setDraft({ ...draft, category: event.target.value })}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-amber-500"
+                className="select"
               >
                 {CATEGORIES.map((category) => (
                   <option key={category}>{category}</option>
                 ))}
               </select>
             </label>
-            <label className="flex items-center gap-2 self-end pb-2.5 text-sm font-semibold text-slate-700">
+            <label className="checkbox-row self-end pb-3.5">
               <input
                 type="checkbox"
                 checked={draft.urgent}
                 onChange={(event) => setDraft({ ...draft, urgent: event.target.checked })}
-                className="h-4 w-4 rounded border-slate-300"
               />
               Mark as urgent
             </label>
             <div className="md:col-span-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
-              >
+              <button type="submit" disabled={saving} className="btn btn-ink btn-sm">
                 {saving ? "Publishing…" : "Publish notice"}
               </button>
             </div>
@@ -360,17 +381,15 @@ export default function AdminDashboard() {
         {message.text ? (
           <p
             role={message.type === "error" ? "alert" : "status"}
-            className={`mt-4 rounded-xl px-4 py-2.5 text-sm ${
-              message.type === "error" ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"
-            }`}
+            className={`alert relative mt-4 ${message.type === "error" ? "alert-error" : "alert-success"}`}
           >
             {message.text}
           </p>
         ) : null}
 
-        <div className="mt-5 space-y-3">
+        <div className="relative mt-5 space-y-3">
           {visibleNotices.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+            <p className="border border-dashed border-line-strong p-6 text-center text-sm text-muted">
               {filter === "Unread" ? "You are all caught up." : "No notices in this category yet."}
             </p>
           ) : (
@@ -386,6 +405,15 @@ export default function AdminDashboard() {
             ))
           )}
         </div>
+      </section>
+
+      <section className="relative border border-line bg-paper-2 p-5">
+        <CornerFrame size={30} inset={8} tone="ink" />
+        <p className="eyebrow relative">Dashboard help</p>
+        <p className="relative text-sm font-semibold text-ink-900">
+          Need help with the scanner, passes, or staff access?
+        </p>
+        <SupportContact phone={supportPhone} className="relative mt-2 text-sm leading-6 text-body-soft" />
       </section>
     </div>
   );
