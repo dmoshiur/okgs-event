@@ -11,7 +11,7 @@ export { THEME_VIDEO_URL };
 export default function AuthScreen({ children, className = "" }) {
   return (
     <main
-      className={`relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 py-10 sm:px-6 ${className}`.trim()}
+      className={`relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 py-6 sm:px-6 ${className}`.trim()}
     >
       <video
         aria-hidden="true"
