@@ -1,12 +1,12 @@
 # OKGS Genesis Platform — Event Management & Attendance System
 
-Full-stack Next.js (App Router) event portal with Turso LibSQL, Cloudinary, Tailwind, QR scanner, Nodemailer.
+Full-stack Next.js (App Router) event portal with Turso LibSQL, Cloudinary, Tailwind, QR scanner, Resend.
 
 ## Features
 - Landing page with muted video background, dynamic branding from admin
 - Public poster QR registration (/register) with BD Division→District→Upazila→Union cascading
 - Photo upload to Cloudinary (400x400 face crop)
-- Instant QR code generation, email via Nodemailer
+- Instant QR code generation, email via Resend
 - Unified login (/login) - phone/email + password for users, username/email for admin/staff
 - User dashboard (/dashboard) with A4 ticket preview
 - Admin panel (/admin):
@@ -24,7 +24,7 @@ Full-stack Next.js (App Router) event portal with Turso LibSQL, Cloudinary, Tail
 - cloudinary SDK
 - qrcode, html5-qrcode
 - bcryptjs, jsonwebtoken
-- nodemailer
+- Resend (HTTP API, no SDK dependency)
 - Tailwind CSS
 
 ## Database Schema (SQLite)
@@ -39,7 +39,8 @@ Full-stack Next.js (App Router) event portal with Turso LibSQL, Cloudinary, Tail
    - TURSO_AUTH_TOKEN=
    - CLOUDINARY_*
    - JWT_SECRET
-   - SMTP_*
+   - RESEND_API_KEY
+   - RESEND_FROM
 2. npm install
 3. npm run dev (binds 0.0.0.0:3000)
 4. Default superadmin: admin@okgs.edu.bd / Admin@123 (from env)
