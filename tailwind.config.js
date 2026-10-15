@@ -73,6 +73,16 @@ module.exports = {
         display: ["Fraunces", "Hind Siliguri", "Georgia", "Times New Roman", "serif"],
         body: ["Inter", "Hind Siliguri", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
         sans: ["Inter", "Hind Siliguri", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        // Royal academic serif for the school wordmark (`font-serif`).
+        serif: [
+          "Cinzel",
+          "Playfair Display",
+          "Fraunces",
+          "Georgia",
+          "Times New Roman",
+          "Times",
+          "serif",
+        ],
       },
       borderRadius: {
         xs: "2px",
