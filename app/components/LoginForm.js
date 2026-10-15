@@ -95,7 +95,7 @@ export default function LoginForm({ config }) {
 
   return (
     <AuthScreen>
-      <section className="reveal relative z-10 w-full max-w-[470px] border border-line-strong bg-surface-warm px-6 py-8 shadow-floated sm:px-10 sm:py-10">
+      <section className="reveal relative z-10 w-full max-w-[460px] bg-white rounded-xl shadow-xl p-8">
         {/* 90-degree corner frame around the sign-in card viewport. */}
         <CornerFrame size={58} inset={10} tone="gold" className="sm:hidden" />
         <CornerFrame size={130} inset={14} tone="gold" className="hidden sm:block" />
@@ -111,9 +111,15 @@ export default function LoginForm({ config }) {
           <h1 className="mt-5 font-display text-[15px] font-bold uppercase tracking-[0.18em] text-ink-900">
             {schoolName}
           </h1>
-          {secondSchoolName ? (
-            <p className="mt-1.5 text-xs text-muted">{secondSchoolName}</p>
-          ) : null}
+          <p className="mt-1.5 text-xs text-muted">{secondSchoolName}</p>
+
+          <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gold-deep">
+            Staff sign in
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-muted-2">
+            {eventTitle}
+          </p>
 
           <div className="mt-4 flex justify-center">
             <span className="pill pill-gold max-w-full">
@@ -141,7 +147,7 @@ export default function LoginForm({ config }) {
         <form onSubmit={handleSubmit} className="relative mt-7 space-y-5">
           <div className="field mb-0">
             <label htmlFor="login-identifier" className="field-label">
-              Phone, email, or staff username
+              Student ID / email / phone
             </label>
             <div className="relative">
               <span className="field-icon">
@@ -154,7 +160,7 @@ export default function LoginForm({ config }) {
                 autoComplete="username"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Phone, email, or staff username"
+                placeholder="Student ID / email / phone"
                 className="input input-icon"
                 required
               />
