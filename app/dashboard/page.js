@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SupportContact from "@/app/components/SupportContact";
+import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
@@ -193,6 +195,15 @@ export default function DashboardPage() {
               {user.ssc_batch && <div className="flex justify-between"><dt className="text-slate-500">Batch</dt><dd>{user.ssc_batch}</dd></div>}
               <div className="flex justify-between"><dt className="text-slate-500">Registered</dt><dd className="text-[11px]">{user.created_at ? new Date(user.created_at).toLocaleString() : "-"}</dd></div>
             </dl>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <h4 className="font-bold text-slate-900 text-sm">Help &amp; Support</h4>
+            <p className="mt-2 text-xs text-slate-500">Having trouble with your pass or login?</p>
+            <SupportContact
+              phone={config?.support_phone || DEFAULT_SUPPORT_PHONE}
+              className="mt-3 text-xs leading-5 text-slate-700"
+            />
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
