@@ -1,0 +1,7 @@
+node_modules
+.next
+local.db
+.env.local
+*.log
+.DS_Store
+Unselected\ files
