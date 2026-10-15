@@ -69,10 +69,17 @@ export default function LoginForm({ config }) {
 
   return (
     <AuthScreen>
-      <section className="reveal relative z-10 w-full max-w-md mx-4 p-6 sm:p-8 rounded-2xl bg-white shadow-xl">
-        {/* 90-degree corner frame around the sign-in card viewport. */}
-        <CornerFrame size={40} inset={8} tone="gold" className="sm:hidden" />
-        <CornerFrame size={90} inset={10} tone="gold" className="hidden sm:block" />
+      {/* Compact, centred sign-in card — never stretched, never taller than it needs to be. */}
+      <section className="reveal relative z-10 w-full max-w-sm sm:max-w-md mx-auto p-6 sm:p-8 rounded-2xl bg-white shadow-2xl">
+        {/* 90-degree L-bracket frame hugging the card edge: thin 1px amber-500/60
+            strokes, one right-angle pair per corner, absolutely positioned inside. */}
+        <CornerFrame
+          size="clamp(34px, 11vw, 56px)"
+          inset={10}
+          thickness={1}
+          tone="amber"
+          className="[&>span]:border-amber-500/60"
+        />
 
         <div className="space-y-4">
           {/* Clean branding header: logo, school name, section subtitle — nothing else. */}
@@ -80,10 +87,13 @@ export default function LoginForm({ config }) {
             <img
               src={SCHOOL_LOGO_URL}
               alt={`${schoolName} logo`}
+              width={48}
+              height={48}
               className="h-12 w-12 object-contain mx-auto"
             />
-            <div className="space-y-1">
-              <h1 className="text-lg sm:text-xl font-bold tracking-wide text-center whitespace-nowrap text-ink-900">
+            <div className="space-y-1.5">
+              {/* School name stays on one continuous line on every screen size. */}
+              <h1 className="whitespace-nowrap text-base sm:text-lg font-serif tracking-wider uppercase text-center text-ink-900">
                 {schoolName}
               </h1>
               <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gold-deep">
@@ -92,7 +102,7 @@ export default function LoginForm({ config }) {
             </div>
           </header>
 
-          <form onSubmit={handleSubmit} className="relative space-y-3">
+          <form onSubmit={handleSubmit} className="relative space-y-4">
             <div className="field mb-0 space-y-1">
               <label htmlFor="login-identifier" className="field-label">
                 Student ID / email / phone

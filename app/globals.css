@@ -58,6 +58,8 @@
   /* ── Typography ───────────────────────────────────────────────────────── */
   --font-display: "Fraunces", "Hind Siliguri", Georgia, "Times New Roman", serif;
   --font-body: "Inter", "Hind Siliguri", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Royal academic serif — the school wordmark and other ceremonial headings. */
+  --font-serif: "Cinzel", "Playfair Display", "Fraunces", Georgia, "Times New Roman", Times, serif;
 
   /* ── Layout ───────────────────────────────────────────────────────────── */
   --container: 1200px;
@@ -279,6 +281,15 @@ textarea {
 
   .corner-frame--gold-soft {
     --frame-color: rgba(228, 201, 126, 0.5);
+  }
+
+  /* Amber accent for the sign-in card framing (Tailwind amber-500 at 60%). */
+  .corner-frame--amber {
+    --frame-color: rgba(245, 158, 11, 0.6);
+  }
+
+  .corner-frame--amber-soft {
+    --frame-color: rgba(245, 158, 11, 0.42);
   }
 
   .corner-frame--ink {

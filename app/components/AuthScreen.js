@@ -36,9 +36,13 @@ export default function AuthScreen({ children, className = "" }) {
         className="fixed inset-0 bg-[linear-gradient(135deg,rgba(5,13,24,0.55),rgba(5,13,24,0.12)_48%,rgba(5,13,24,0.62))]"
       />
 
-      {/* Viewport-level 90-degree framing. */}
-      <ViewportFrame size={150} inset={26} tone="gold-soft" className="hidden md:block" />
-      <ViewportFrame size={64} inset={14} tone="gold-soft" className="md:hidden" />
+      {/* Viewport-level 90-degree framing — one bracket set that scales fluidly
+          from phone to desktop instead of two fixed breakpoint pairs. */}
+      <ViewportFrame
+        size="clamp(46px, 8.5vw, 150px)"
+        inset="clamp(12px, 2vw, 26px)"
+        tone="amber-soft"
+      />
 
       {children}
     </main>
