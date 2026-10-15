@@ -1,64 +1,66 @@
-# OKGS Genesis Platform — Event Management & Attendance System
+# Omar Kindergarten School — Event & Attendance Portal
 
-Full-stack Next.js (App Router) event portal with Turso LibSQL, Cloudinary, Tailwind, QR scanner, Resend.
+A permanent, responsive event registration and attendance system built with Next.js App Router, Turso/LibSQL, Cloudinary, QR codes, and Nodemailer-compatible SMTP.
 
-## Features
-- Landing page with muted video background, dynamic branding from admin
-- Public poster QR registration (/register) with BD Division→District→Upazila→Union cascading
-- Photo upload to Cloudinary (400x400 face crop)
-- Instant QR code generation, email via Resend
-- Unified login (/login) - phone/email + password for users, username/email for admin/staff
-- User dashboard (/dashboard) with A4 ticket preview
-- Admin panel (/admin):
-  - Dashboard stats
-  - User directory with search, edit, delete, manual add (default pass 123456)
-  - Live QR gate scanner (/admin/scan) using html5-qrcode, logs check_in/check_out
-  - A4 print engine (/admin/print) with background https://i.postimg.cc/CxG99ZrK/image.png, 210x297mm, @page 0 margin
-  - Branding settings (/admin/settings) - 2 logos, 2 school names, event title/desc/date/location/notice/guidelines
-  - Multi-admin RBAC (/admin/admins) - superadmin can create staff/superadmin
-  - Attendance logs (/admin/attendance)
+## Portal routes
 
-## Tech Stack
-- Next.js 14 App Router
-- @libsql/client (Turso SQLite)
-- cloudinary SDK
-- qrcode, html5-qrcode
-- bcryptjs, jsonwebtoken
-- Resend (HTTP API, no SDK dependency)
+- `/` and `/login` — one unified sign-in screen; there is no marketing or landing page. The sign-in card uses the muted full-screen school video, dynamically configured school branding, attendee/staff sign-in, password visibility, and password recovery.
+- `/register` — public attendee registration with photo upload, a Bangladesh division → district → upazila → union address selector, and an instant QR pass.
+- `/dashboard` — attendee pass, QR download, printable ticket, and attendance history.
+- `/admin` — staff dashboard and attendee directory.
+- `/admin/scan` — webcam QR scanner with manual-code fallback and alternating check-in/check-out logs.
+- `/admin/print` — individual or batch A4 pass printing.
+- `/admin/settings` — school logos/names, active event, notice, and ticket branding.
+- `/admin/admins` — super-admin-only staff account management.
+
+The address hierarchy includes all eight divisions and the bundled district/upazila/union lists. The source and license attribution are in `data/LOCATION-DATA-LICENSE.md`.
+
+## Stack
+
+- Next.js 15 App Router / React 18
+- Turso LibSQL (`@libsql/client`); local SQLite is used as a development fallback
+- Cloudinary for attendee photos and school logos (square crop for attendee photos)
+- Nodemailer for SMTP delivery, with optional Resend API fallback
+- `qrcode` for attendee passes and `html5-qrcode` for the admin gate scanner
 - Tailwind CSS
 
-## Database Schema (SQLite)
-- system_config
-- users (user_code UNIQUE, phone UNIQUE, photo_url, qr_code_url)
-- admins (username UNIQUE, email UNIQUE, role superadmin|staff)
-- attendance_logs (user_id, type check_in|check_out, scanned_by)
+## Local setup
 
-## Setup
-1. Copy `.env.example` to `.env.local` and fill:
-   - TURSO_DATABASE_URL=file:local.db (or Turso URL)
-   - TURSO_AUTH_TOKEN=
-   - CLOUDINARY_*
-   - JWT_SECRET
-   - RESEND_API_KEY
-   - RESEND_FROM
-2. npm install
-3. npm run dev (binds 0.0.0.0:3000)
-4. Default superadmin: admin@okgs.edu.bd / Admin@123 (from env)
+1. Install Node.js 20 or newer.
+2. Copy `.env.example` to `.env.local` and configure the values below.
+3. Install dependencies and start the portal:
 
-## Build
-npm run build && npm start
+   ```bash
+   npm ci
+   npm run dev
+   ```
 
-## Print Spec
-- @page { size: A4 portrait; margin: 0; }
-- Background stretched 210mm x 297mm
-- QR centered with photo embedded
-- Logos & names top header
+4. Visit `http://localhost:3000`. In development only, if there is no admin account and `ADMIN_DEFAULT_PASSWORD` is unset, a local bootstrap account is seeded as `admin@okgs.edu.bd` / `Admin@123`. Change it before using real data; production does not seed this fallback.
 
-## Notes
-- Lightweight, no heavy graphics, works on mid-range devices
-- Video muted autoplay loop playsinline
-- All APIs under /api/*
-- Auth via httpOnly cookie okgs_token (JWT 7d)
+### Required production configuration
 
-## License
-MIT for OKGS
+- `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` — use a Turso `libsql://` URL for persistent production data.
+- `JWT_SECRET` — set a unique random value (for example, `openssl rand -base64 32`). Production authentication intentionally has no built-in JWT secret fallback.
+- `ADMIN_DEFAULT_EMAIL` and `ADMIN_DEFAULT_PASSWORD` — set these to bootstrap the first super-admin if the admin table is empty.
+- Cloudinary credentials — required for public attendee photo uploads and admin logo uploads.
+- `NEXT_PUBLIC_APP_URL` — the canonical public site URL used in email links.
+
+For email, configure either SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`) or `RESEND_API_KEY` / `RESEND_FROM`. SMTP/Nodemailer takes precedence. If email is not configured, registration still creates and displays the pass, but the UI will say that email delivery was skipped.
+
+## Pass and attendance details
+
+- Each attendee receives a unique registration code and QR image immediately after registration. The QR image is attached to the registration email when a mail provider is configured.
+- Registration requires a unique phone number, password, valid Bangladesh address, and JPEG/PNG/WebP profile image no larger than 5 MB.
+- Passwords are bcrypt-hashed. Session cookies are HTTP-only and secure in production. Password reset links are single-use and expire after 30 minutes; the account must have an email address to receive one.
+- Manual attendees do not need to set a password. Their accounts receive an undisclosed random credential rather than a shared default password.
+- The gate scanner records check-in/check-out events with the current admin and server timestamp. The camera pauses after a scan to prevent repeated frame reads from generating duplicate attendance events.
+- A4 tickets use the specified background template and `@page { size: A4 portrait; margin: 0; }` print sizing.
+
+## Build and run
+
+```bash
+npm run build
+npm start
+```
+
+`npm run dev` and `npm start` bind to `0.0.0.0:3000` for hosted previews. Configure the Turso, Cloudinary, mail, and auth environment variables in your deployment platform; do not commit `.env.local` or production secrets.

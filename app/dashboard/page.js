@@ -84,7 +84,7 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/login" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-sm">OK</div>
             <span className="font-bold text-slate-900 hidden sm:inline">OKGS Genesis</span>
           </Link>
@@ -102,19 +102,19 @@ export default function DashboardPage() {
           <p className="text-sm text-slate-500 mt-1">Show this QR at gate. Print A4 recommended.</p>
 
           {/* A4 Ticket Preview */}
-          <div className="mt-6 bg-white rounded-[20px] border border-slate-200 shadow-xl overflow-hidden">
+          <div className="print-area mt-6 bg-white rounded-[20px] border border-slate-200 shadow-xl overflow-hidden">
             {/* Ticket Header */}
-            <div className="relative h-[420px] w-full overflow-hidden bg-slate-900" style={{ backgroundImage: `url(${ticketBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <div className="print-ticket relative h-[420px] w-full overflow-hidden bg-slate-900" style={{ backgroundImage: `url(${ticketBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
               <div className="absolute inset-0 bg-slate-900/70" />
               <div className="relative z-10 p-6 h-full flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div className="flex gap-2">
-                    <img src={config?.school_logo_1 || "https://via.placeholder.com/40"} alt="Logo1" className="w-10 h-10 rounded-full bg-white p-1 object-cover" />
-                    <img src={config?.school_logo_2 || "https://via.placeholder.com/40"} alt="Logo2" className="w-10 h-10 rounded-full bg-white p-1 object-cover" />
+                    <img src={config?.school_logo_1 || "/okgs-mark.svg"} alt="Primary school logo" className="w-10 h-10 rounded-full bg-white p-1 object-cover" />
+                    {config?.school_logo_2 && <img src={config.school_logo_2} alt="Secondary school logo" className="w-10 h-10 rounded-full bg-white p-1 object-cover" />}
                   </div>
                   <div className="text-right">
-                    <p className="text-white font-bold text-xs">{config?.school_name_1 || "OKGS High School"}</p>
-                    <p className="text-amber-400 text-[10px]">{config?.school_name_2 || "Genesis Academy"}</p>
+                    <p className="text-white font-bold text-xs">{config?.school_name_1 || "OMAR KINDERGARTEN SCHOOL"}</p>
+                    {config?.school_name_2 && <p className="text-amber-400 text-[10px]">{config.school_name_2}</p>}
                   </div>
                 </div>
 
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-white/50 text-[10px] uppercase tracking-widest">Event</p>
-                    <p className="text-white font-bold text-sm">{config?.event_title || "OKGS Genesis Grand Reunion 2026"}</p>
+                    <p className="text-white font-bold text-sm">{config?.event_title || "Omar Kindergarten School Event"}</p>
                     <p className="text-white/60 text-[11px]">{config?.event_date} • {config?.event_location}</p>
                   </div>
                   <p className="text-white/20 text-[10px]">A4 Ticket • 210x297mm • OKGS</p>
@@ -143,7 +143,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-4 bg-amber-50 border-t border-amber-100 flex justify-between items-center">
+            <div className="no-print p-4 bg-amber-50 border-t border-amber-100 flex justify-between items-center">
               <p className="text-[11px] text-amber-800">Present this QR at entry gate. Valid for single person. Non-transferable.</p>
               <button onClick={() => window.print()} className="bg-slate-900 text-white text-xs px-4 py-2 rounded-full font-bold">Print A4</button>
             </div>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             <div className="mt-4 space-y-3">
               <button onClick={() => window.print()} className="w-full bg-white text-slate-900 py-3 rounded-xl font-bold text-sm">Print A4 Ticket</button>
               <a href={user.qr_code_url} download={`${user.user_code}-qr.png`} className="block w-full border border-white/20 text-center py-3 rounded-xl text-sm hover:bg-white/10">Download QR</a>
-              <Link href="/" className="block w-full border border-white/10 text-center py-3 rounded-xl text-sm text-white/60 hover:text-white">Back to Home</Link>
+              <Link href="/login" className="block w-full border border-white/10 text-center py-3 rounded-xl text-sm text-white/60 hover:text-white">Sign-in page</Link>
             </div>
           </div>
 
@@ -207,7 +207,8 @@ export default function DashboardPage() {
           @page { size: A4 portrait; margin: 0; }
           body * { visibility: hidden; }
           .print-area, .print-area * { visibility: visible; }
-          .print-area { position: absolute; left: 0; top: 0; width: 210mm; height: 297mm; }
+          .print-area { position: absolute; z-index: 9999; left: 0; top: 0; width: 210mm; height: 297mm; margin: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+          .print-ticket { width: 210mm !important; height: 297mm !important; border-radius: 0 !important; }
         }
       `}</style>
     </div>

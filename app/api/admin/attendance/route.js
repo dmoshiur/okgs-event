@@ -1,45 +1,36 @@
 import { NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
-import { verifyToken } from "@/lib/auth";
+import { getAdminFromRequest } from "@/lib/auth";
 
-function getAuth(req) {
-  const cookie = req.headers.get("cookie") || "";
-  const match = cookie.match(/okgs_token=([^;]+)/);
-  if (!match) return null;
-  const payload = verifyToken(decodeURIComponent(match[1]));
-  if (!payload || payload.type !== "admin") return null;
-  return payload;
-}
+export async function GET(request) {
+  try {
+    await initDb();
+    const auth = await getAdminFromRequest(request);
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-export async function GET(req) {
-  await initDb();
-  const auth = getAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("user_id");
-  const limit = parseInt(searchParams.get("limit") || "100");
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("user_id");
+    const requestedLimit = Number.parseInt(searchParams.get("limit") || "100", 10);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.min(500, Math.max(1, requestedLimit))
+      : 100;
 
-  let sql = `
-    SELECT attendance_logs.*, users.name, users.user_code, users.photo_url, admins.username as scanned_by_name
-    FROM attendance_logs
-    LEFT JOIN users ON attendance_logs.user_id = users.id
-    LEFT JOIN admins ON attendance_logs.scanned_by = admins.id
-    ORDER BY attendance_logs.timestamp DESC LIMIT ?
-  `;
-  let args = [limit];
-
-  if (userId) {
-    sql = `
-      SELECT attendance_logs.*, users.name, users.user_code, users.photo_url, admins.username as scanned_by_name
-      FROM attendance_logs
-      LEFT JOIN users ON attendance_logs.user_id = users.id
-      LEFT JOIN admins ON attendance_logs.scanned_by = admins.id
-      WHERE attendance_logs.user_id = ?
-      ORDER BY attendance_logs.timestamp DESC LIMIT ?
-    `;
-    args = [userId, limit];
+    const where = userId ? "WHERE attendance_logs.user_id = ?" : "";
+    const args = userId ? [userId, limit] : [limit];
+    const result = await db.execute({
+      sql: `SELECT attendance_logs.*, users.name, users.user_code, users.photo_url,
+        admins.username AS scanned_by_name
+        FROM attendance_logs
+        LEFT JOIN users ON attendance_logs.user_id = users.id
+        LEFT JOIN admins ON attendance_logs.scanned_by = admins.id
+        ${where}
+        ORDER BY attendance_logs.timestamp DESC, attendance_logs.id DESC
+        LIMIT ?`,
+      args,
+    });
+    return NextResponse.json({ logs: result.rows });
+  } catch (error) {
+    console.error("Attendance logs lookup failed:", error);
+    return NextResponse.json({ error: "Unable to load attendance logs." }, { status: 500 });
   }
-
-  const res = await db.execute({ sql, args });
-  return NextResponse.json({ logs: res.rows });
 }

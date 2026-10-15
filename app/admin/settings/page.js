@@ -16,6 +16,7 @@ export default function SettingsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState("");
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setMsg("✅ Settings updated successfully! Landing page will reflect instantly.");
+      setMsg("✅ Settings updated. The sign-in portal, registration, and new passes now use this branding.");
     } catch (err) {
       setMsg("❌ " + err.message);
     } finally {
@@ -73,26 +74,31 @@ export default function SettingsPage() {
   }
 
   async function handleLogoUpload(e, field) {
-    const file = e.target.files[0];
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setMsg("❌ Choose a JPEG, PNG, or WebP logo under 5 MB.");
+      input.value = "";
+      return;
+    }
+
     const fd = new FormData();
     fd.append("file", file);
     fd.append("folder", "okgs/branding");
+    setUploadingLogo(field);
+    setMsg("");
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
-      if (res.ok && data.url) {
-        setForm({ ...form, [field]: data.url });
-      } else {
-        // fallback to base64 preview
-        const reader = new FileReader();
-        reader.onload = () => setForm((f) => ({ ...f, [field]: reader.result }));
-        reader.readAsDataURL(file);
-      }
-    } catch {
-      const reader = new FileReader();
-      reader.onload = () => setForm((f) => ({ ...f, [field]: reader.result }));
-      reader.readAsDataURL(file);
+      if (!res.ok || !data.url) throw new Error(data.error || "Logo upload failed.");
+      setForm((current) => ({ ...current, [field]: data.url }));
+      setMsg("✅ Logo uploaded to Cloudinary. Save configuration to publish it.");
+    } catch (error) {
+      setMsg("❌ " + error.message);
+    } finally {
+      setUploadingLogo("");
+      input.value = "";
     }
   }
 
@@ -101,7 +107,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-black text-slate-900">System & Branding Settings</h1>
-      <p className="text-sm text-slate-500 mt-1">Dynamic Admin Config: Logos (2), School Names (2), Event Banner, Notice, Guidelines, Print layouts</p>
+        <p className="text-sm text-slate-500 mt-1">Manage school logos and names, the active event details, notices, guidelines, and ticket branding.</p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div className="bg-white rounded-2xl border border-slate-200 p-6 grid sm:grid-cols-2 gap-4">
@@ -117,13 +123,15 @@ export default function SettingsPage() {
           <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Primary Logo URL *</label>
             <input name="school_logo_1" value={form.school_logo_1} onChange={handleChange} required className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="https://..." />
-            <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, "school_logo_1")} className="mt-2 text-xs" />
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleLogoUpload(e, "school_logo_1")} className="mt-2 text-xs" disabled={Boolean(uploadingLogo)} />
+            {uploadingLogo === "school_logo_1" && <p className="mt-1 text-[11px] text-amber-700">Uploading logo…</p>}
             {form.school_logo_1 && <img src={form.school_logo_1} alt="Logo1" className="mt-2 w-12 h-12 rounded-full object-cover border" />}
           </div>
           <div>
             <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Secondary Logo URL</label>
             <input name="school_logo_2" value={form.school_logo_2} onChange={handleChange} className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="https://..." />
-            <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, "school_logo_2")} className="mt-2 text-xs" />
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleLogoUpload(e, "school_logo_2")} className="mt-2 text-xs" disabled={Boolean(uploadingLogo)} />
+            {uploadingLogo === "school_logo_2" && <p className="mt-1 text-[11px] text-amber-700">Uploading logo…</p>}
             {form.school_logo_2 && <img src={form.school_logo_2} alt="Logo2" className="mt-2 w-12 h-12 rounded-full object-cover border" />}
           </div>
         </div>
@@ -145,7 +153,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Event Location</label>
-              <input name="event_location" value={form.event_location} onChange={handleChange} className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="OKGS Campus, Joypurhat" />
+              <input name="event_location" value={form.event_location} onChange={handleChange} className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="School campus or event venue" />
             </div>
           </div>
           <div>
@@ -164,7 +172,7 @@ export default function SettingsPage() {
           {saving ? "Saving..." : "Save Configuration →"}
         </button>
 
-        <p className="text-[11px] text-slate-400 text-center">Changes reflect instantly on landing page (/), navbar logos, footer, and A4 print header.</p>
+        <p className="text-[11px] text-slate-400 text-center">Changes apply to the sign-in screen, registration flow, attendee passes, and A4 print layouts.</p>
       </form>
     </div>
   );

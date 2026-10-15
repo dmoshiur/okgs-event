@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function PrintPage() {
@@ -13,35 +13,39 @@ export default function PrintPage() {
 
   const bgTemplate = "https://i.postimg.cc/CxG99ZrK/image.png";
 
-  async function fetchData(q = "") {
+  const fetchData = useCallback(async (q = "") => {
     setLoading(true);
     try {
       const cfgRes = await fetch("/api/admin/config");
       if (cfgRes.ok) setConfig(await cfgRes.json());
 
-      const usersRes = await fetch(`/api/admin/users?search=${encodeURIComponent(q)}&limit=100`);
-      if (usersRes.ok) {
-        const data = await usersRes.json();
-        let list = data.users;
-        if (userIdQuery) {
-          const single = list.find((u) => String(u.id) === String(userIdQuery));
-          if (single) {
-            list = [single];
-            setSelected([single.id]);
-          }
+      if (userIdQuery) {
+        const singleRes = await fetch(`/api/admin/users/${encodeURIComponent(userIdQuery)}`);
+        if (singleRes.ok) {
+          const single = await singleRes.json();
+          setUsers([single]);
+          setSelected([single.id]);
+        } else {
+          setUsers([]);
+          setSelected([]);
         }
-        setUsers(list);
+      } else {
+        const usersRes = await fetch(`/api/admin/users?search=${encodeURIComponent(q)}&limit=100`);
+        if (usersRes.ok) {
+          const data = await usersRes.json();
+          setUsers(data.users || []);
+        }
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }
+  }, [userIdQuery]);
 
   useEffect(() => {
     fetchData("");
-  }, [userIdQuery]);
+  }, [fetchData]);
 
   function toggleSelect(id) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -105,7 +109,7 @@ export default function PrintPage() {
           selectedUsers.map((user) => (
             <div key={user.id} className="a4-page relative bg-white overflow-hidden print-break" style={{ width: "210mm", height: "297mm", margin: "0 auto 20px", position: "relative" }}>
               {/* Background Template */}
-              <img src={bgTemplate} alt="Ticket BG" className="absolute inset-0 w-full h-full object-cover" style={{ width: "210mm", height: "297mm" }} />
+              <img src={bgTemplate} alt="Ticket background template" className="absolute inset-0 h-full w-full object-fill" style={{ width: "210mm", height: "297mm" }} />
               <div className="absolute inset-0 bg-black/40" />
 
               {/* Content Overlay */}
@@ -113,14 +117,15 @@ export default function PrintPage() {
                 {/* Header */}
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <img src={config?.school_logo_1 || "https://via.placeholder.com/60"} alt="Logo1" className="w-[14mm] h-[14mm] rounded-full bg-white p-1 object-cover" />
+                    <img src={config?.school_logo_1 || "/okgs-mark.svg"} alt="Primary school logo" className="w-[14mm] h-[14mm] rounded-full bg-white p-1 object-cover" />
+                    {config?.school_logo_2 && <img src={config.school_logo_2} alt="Secondary school logo" className="w-[14mm] h-[14mm] rounded-full bg-white p-1 object-cover" />}
                     <div>
-                      <p className="font-black text-[4mm] leading-tight">{config?.school_name_1 || "OKGS High School"}</p>
-                      <p className="text-[3mm] text-white/70">{config?.school_name_2 || "Genesis Academy"}</p>
+                      <p className="font-black text-[4mm] leading-tight">{config?.school_name_1 || "OMAR KINDERGARTEN SCHOOL"}</p>
+                      {config?.school_name_2 && <p className="text-[3mm] text-white/70">{config.school_name_2}</p>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[3.5mm] font-bold tracking-widest uppercase text-amber-400">{config?.event_title || "Genesis Grand Reunion 2026"}</p>
+                    <p className="text-[3.5mm] font-bold tracking-widest uppercase text-amber-400">{config?.event_title || "Omar Kindergarten School Event"}</p>
                     <p className="text-[2.8mm] text-white/60">{config?.event_date} • {config?.event_location}</p>
                   </div>
                 </div>

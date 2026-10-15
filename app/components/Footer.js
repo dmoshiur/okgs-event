@@ -1,7 +1,9 @@
+import Link from "next/link";
+
 export default function Footer({ config }) {
-  const name1 = config?.school_name_1 || "OKGS High School";
-  const name2 = config?.school_name_2 || "Genesis Academy";
-  const eventTitle = config?.event_title || "OKGS Genesis Grand Reunion 2026";
+  const name1 = config?.school_name_1 || "OMAR KINDERGARTEN SCHOOL";
+  const name2 = config?.school_name_2 || "";
+  const eventTitle = config?.event_title || "Omar Kindergarten School Event";
 
   return (
     <footer className="bg-slate-950 text-slate-300 border-t border-white/5">
@@ -28,10 +30,10 @@ export default function Footer({ config }) {
           <div>
             <h4 className="font-semibold text-white mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="/" className="hover:text-white transition">Home</a></li>
-              <li><a href="/register" className="hover:text-white transition">Registration</a></li>
-              <li><a href="/login" className="hover:text-white transition">Login / My Pass</a></li>
-              <li><a href="/admin" className="hover:text-white transition">Admin Portal</a></li>
+              <li><Link href="/login" className="hover:text-white transition">Sign In</Link></li>
+              <li><Link href="/register" className="hover:text-white transition">Registration</Link></li>
+              <li><Link href="/login" className="hover:text-white transition">Login / My Pass</Link></li>
+              <li><Link href="/admin" className="hover:text-white transition">Admin Portal</Link></li>
             </ul>
           </div>
 

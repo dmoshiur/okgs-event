@@ -21,10 +21,17 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successData, setSuccessData] = useState(null);
+  const [emailStatus, setEmailStatus] = useState("not_provided");
 
   const [districtList, setDistrictList] = useState([]);
   const [upazilaList, setUpazilaList] = useState([]);
   const [unionList, setUnionList] = useState([]);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
 
   useEffect(() => {
     if (form.division) {
@@ -42,7 +49,7 @@ export default function RegisterPage() {
     } else {
       setUpazilaList([]);
     }
-  }, [form.district]);
+  }, [form.division, form.district]);
 
   useEffect(() => {
     if (form.division && form.district && form.upazila) {
@@ -51,18 +58,28 @@ export default function RegisterPage() {
     } else {
       setUnionList([]);
     }
-  }, [form.upazila]);
+  }, [form.division, form.district, form.upazila]);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   function handlePhoto(e) {
-    const file = e.target.files[0];
-    if (file) {
-      setPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPEG, PNG, or WebP photo.");
+      e.target.value = "";
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Your photo must be smaller than 5 MB.");
+      e.target.value = "";
+      return;
+    }
+    setError("");
+    setPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
   }
 
   async function handleSubmit(e) {
@@ -79,6 +96,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Registration failed");
       setSuccessData(data.user);
+      setEmailStatus(data.email_status || "not_provided");
       window.scrollTo(0, 0);
     } catch (err) {
       setError(err.message);
@@ -121,10 +139,18 @@ export default function RegisterPage() {
               </Link>
             </div>
 
-            <p className="text-center text-[11px] text-slate-400 mt-4">Email sent to {successData.email || "your email"} (if provided). You can login with phone & password.</p>
+            <p className="text-center text-[11px] text-slate-500 mt-4">
+              {emailStatus === "sent"
+                ? `Your QR pass was emailed to ${successData.email}.`
+                : emailStatus === "not_configured"
+                  ? "Email delivery is not configured; download or print this pass and keep your registration code."
+                  : emailStatus === "failed"
+                    ? "We could not send the email. Your pass is ready here—please download or print it."
+                    : "You can sign in with your phone number and the password you created."}
+            </p>
 
             <div className="mt-4 text-center">
-              <Link href="/" className="text-xs text-slate-500 hover:text-slate-900">← Back to Home</Link>
+              <Link href="/login" className="text-xs text-slate-500 hover:text-slate-900">← Back to Sign In</Link>
             </div>
           </div>
         </div>
@@ -141,7 +167,7 @@ export default function RegisterPage() {
             <source src="https://res.cloudinary.com/tt7oyjd1/video/upload/v1791960191/okgs/film/odyssey-montage-v6.mp4" type="video/mp4" />
           </video>
           <div className="relative z-10">
-            <Link href="/" className="text-white/60 hover:text-white text-sm">← Home</Link>
+            <Link href="/login" className="text-white/60 hover:text-white text-sm">← Sign in</Link>
             <div className="mt-10">
               <div className="w-12 h-12 rounded-xl bg-amber-400 flex items-center justify-center font-black text-slate-900">OK</div>
               <h1 className="text-4xl font-black text-white mt-6 leading-tight">Join the <span className="text-amber-400">Genesis</span> Reunion</h1>
@@ -174,8 +200,8 @@ export default function RegisterPage() {
                     {photoPreview ? <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" /> : <span className="text-slate-400 text-xs">No Photo</span>}
                   </div>
                   <div>
-                    <input type="file" accept="image/*" onChange={handlePhoto} className="text-sm" required />
-                    <p className="text-[11px] text-slate-400 mt-1">JPG/PNG, max 5MB. Will be uploaded to Cloudinary cropped 400x400.</p>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} className="text-sm" required />
+                    <p className="text-[11px] text-slate-400 mt-1">JPEG, PNG, or WebP. Max 5 MB; uploaded to Cloudinary as a square crop.</p>
                   </div>
                 </div>
               </div>
@@ -187,11 +213,11 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Phone Number *</label>
-                  <input name="phone" value={form.phone} onChange={handleChange} required className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="01XXXXXXXXX" />
+                  <input name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={handleChange} required minLength={7} maxLength={20} pattern="[+0-9(). -]{7,20}" className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="01XXXXXXXXX" />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Password Setup *</label>
-                  <input name="password" type="password" value={form.password} onChange={handleChange} required className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="Min 6 characters" />
+                  <input name="password" type="password" autoComplete="new-password" value={form.password} onChange={handleChange} required minLength={8} maxLength={72} className="mt-2 w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-slate-900 outline-none text-sm" placeholder="At least 8 characters" />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Email (Optional)</label>

@@ -7,68 +7,112 @@
   --background-rgb: 255, 255, 255;
 }
 
-* {
+html {
   scroll-behavior: smooth;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Print Styles for A4 */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @media print {
   @page {
     size: A4 portrait;
     margin: 0;
   }
+
+  html,
   body {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    background: #fff;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
   .no-print {
     display: none !important;
   }
+
+  .admin-content {
+    width: 210mm !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .admin-content > div {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print-area {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .print-area,
+  .print-area * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .print-break {
     page-break-after: always;
+    break-after: page;
   }
-}
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Video overlay */
-.hero-overlay {
-  background: linear-gradient(180deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.65) 50%, rgba(15,23,42,0.9) 100%);
-}
-
-/* Glass */
-.glass {
-  backdrop-filter: blur(12px);
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-}
-
-/* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.animate-float {
-  animation: float 4s ease-in-out infinite;
+  .print-area > .a4-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
 }

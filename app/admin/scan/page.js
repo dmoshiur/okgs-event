@@ -8,6 +8,7 @@ export default function ScanPage() {
   const [manualCode, setManualCode] = useState("");
   const [history, setHistory] = useState([]);
   const html5QrCodeRef = useRef(null);
+  const scanBusyRef = useRef(false);
   const [cameraReady, setCameraReady] = useState(false);
 
   useEffect(() => {
@@ -32,11 +33,11 @@ export default function ScanPage() {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
-          // On success
-          console.log("Scanned:", decodedText);
+          if (scanBusyRef.current) return;
+          try {
+            html5QrCode.pause();
+          } catch {}
           await handleScan(decodedText);
-          // Optional: pause after scan
-          // html5QrCode.pause();
         },
         (err) => {
           // ignore scan failure
@@ -58,23 +59,25 @@ export default function ScanPage() {
       html5QrCodeRef.current = null;
     }
     setScanning(false);
+    setCameraReady(false);
   }
 
   async function handleScan(code) {
+    const qrCode = String(code || "").trim();
+    if (!qrCode || scanBusyRef.current) return;
+    scanBusyRef.current = true;
     setError("");
     try {
       const res = await fetch("/api/admin/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qr_code: code.trim() }),
+        body: JSON.stringify({ qr_code: qrCode }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Invalid QR");
 
       setResult(data);
       setHistory((h) => [data, ...h].slice(0, 10));
-
-      // Play beep
       try {
         const audio = new Audio("data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUQAAACA");
         audio.play().catch(() => {});
@@ -82,6 +85,18 @@ export default function ScanPage() {
     } catch (e) {
       setError(e.message);
       setResult({ valid: false, error: e.message });
+    } finally {
+      scanBusyRef.current = false;
+    }
+  }
+
+  async function resumeScanner() {
+    try {
+      await html5QrCodeRef.current?.resume();
+      setError("");
+      setResult(null);
+    } catch (e) {
+      setError("Unable to resume the camera. Stop it and start again.");
     }
   }
 
@@ -104,7 +119,12 @@ export default function ScanPage() {
             {!scanning ? (
               <button onClick={startScanner} className="bg-slate-900 text-white px-4 py-2 rounded-full text-xs font-bold">Start Camera</button>
             ) : (
-              <button onClick={stopScanner} className="bg-red-50 text-red-600 px-4 py-2 rounded-full text-xs font-bold">Stop Camera</button>
+              <div className="flex gap-2">
+                {(result || error) && (
+                  <button onClick={resumeScanner} className="bg-amber-400 text-slate-900 px-4 py-2 rounded-full text-xs font-bold">Scan Next Pass</button>
+                )}
+                <button onClick={stopScanner} className="bg-red-50 text-red-600 px-4 py-2 rounded-full text-xs font-bold">Stop Camera</button>
+              </div>
             )}
           </div>
 
@@ -116,6 +136,8 @@ export default function ScanPage() {
               </div>
             )}
           </div>
+
+          <p className="mt-3 text-[11px] leading-5 text-slate-400">The camera pauses after each QR pass to prevent accidental duplicate check-in/check-out. Choose “Scan Next Pass” to continue.</p>
 
           <div className="mt-6">
             <label className="text-[11px] font-bold tracking-widest uppercase text-slate-500">Manual Code Entry (Fallback)</label>
@@ -184,7 +206,7 @@ export default function ScanPage() {
 
           {/* History */}
           <div className="bg-slate-900 rounded-2xl p-6 text-white">
-            <h3 className="font-bold text-sm">Today's Scan History (Last 10)</h3>
+            <h3 className="font-bold text-sm">Today&apos;s Scan History (Last 10)</h3>
             <div className="mt-4 space-y-2 max-h-[240px] overflow-y-auto">
               {history.length === 0 ? <p className="text-xs text-white/40">No scans yet</p> : history.map((h, i) => (
                 <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl p-2">

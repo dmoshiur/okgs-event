@@ -1,42 +1,63 @@
 import { NextResponse } from "next/server";
 import { db, initDb } from "@/lib/db";
-import { verifyToken, hashPassword } from "@/lib/auth";
+import { getAdminFromRequest, hashPassword } from "@/lib/auth";
 
-function getAuth(req) {
-  const cookie = req.headers.get("cookie") || "";
-  const match = cookie.match(/okgs_token=([^;]+)/);
-  if (!match) return null;
-  const payload = verifyToken(decodeURIComponent(match[1]));
-  if (!payload || payload.type !== "admin") return null;
-  return payload;
-}
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export async function GET(req) {
-  await initDb();
-  const auth = getAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const res = await db.execute("SELECT id, username, email, role, created_at FROM admins ORDER BY created_at DESC");
-  return NextResponse.json({ admins: res.rows });
-}
-
-export async function POST(req) {
+export async function GET(request) {
   try {
     await initDb();
-    const auth = getAuth(req);
+    const auth = await getAdminFromRequest(request);
     if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    if (auth.role !== "superadmin") return NextResponse.json({ error: "Only superadmin can create admins" }, { status: 403 });
+    const result = await db.execute(
+      "SELECT id, username, email, role, created_at FROM admins ORDER BY created_at DESC"
+    );
+    return NextResponse.json({ admins: result.rows });
+  } catch (error) {
+    console.error("Admin directory lookup failed:", error);
+    return NextResponse.json({ error: "Unable to load administrators." }, { status: 500 });
+  }
+}
 
-    const { username, email, password, role } = await req.json();
-    if (!username || !email || !password) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+export async function POST(request) {
+  try {
+    await initDb();
+    const auth = await getAdminFromRequest(request);
+    if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (auth.role !== "superadmin") {
+      return NextResponse.json({ error: "Only a super-admin can create accounts." }, { status: 403 });
+    }
 
-    const hash = await hashPassword(password);
+    const body = await request.json();
+    const username = String(body.username || "").trim();
+    const email = String(body.email || "").trim().toLowerCase();
+    const password = String(body.password || "");
+    const role = String(body.role || "staff");
+
+    if (!/^[a-zA-Z0-9._-]{3,40}$/.test(username)) {
+      return NextResponse.json({ error: "Username must be 3–40 letters, numbers, dots, underscores, or hyphens." }, { status: 400 });
+    }
+    if (email.length > 254 || !EMAIL_PATTERN.test(email)) {
+      return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    }
+    if (password.length < 8 || Buffer.byteLength(password, "utf8") > 72) {
+      return NextResponse.json({ error: "Password must be at least 8 characters and no more than 72 bytes." }, { status: 400 });
+    }
+    if (!["staff", "superadmin"].includes(role)) {
+      return NextResponse.json({ error: "Choose a valid administrator role." }, { status: 400 });
+    }
+
+    const passwordHash = await hashPassword(password);
     const result = await db.execute({
       sql: "INSERT INTO admins (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
-      args: [username, email, hash, role || "staff"],
+      args: [username, email, passwordHash, role],
     });
     return NextResponse.json({ success: true, id: Number(result.lastInsertRowid) });
-  } catch (e) {
-    if (e.message.includes("UNIQUE")) return NextResponse.json({ error: "Username or email already exists" }, { status: 409 });
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (error) {
+    if (String(error.message).includes("UNIQUE constraint failed")) {
+      return NextResponse.json({ error: "That username or email is already in use." }, { status: 409 });
+    }
+    console.error("Administrator creation failed:", error);
+    return NextResponse.json({ error: "Unable to create administrator." }, { status: 500 });
   }
 }

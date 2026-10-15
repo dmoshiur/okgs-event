@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
+import { clearAuthCookie } from "@/lib/auth";
 
 export async function POST() {
-  const res = NextResponse.json({ success: true });
-  res.cookies.set("okgs_token", "", { httpOnly: true, path: "/", maxAge: 0 });
-  return res;
+  return clearAuthCookie(NextResponse.json({ success: true }));
 }
+
 export async function GET() {
-  const res = NextResponse.json({ success: true });
-  res.cookies.set("okgs_token", "", { httpOnly: true, path: "/", maxAge: 0 });
-  return res;
+  return clearAuthCookie(NextResponse.json({ success: true }));
 }
