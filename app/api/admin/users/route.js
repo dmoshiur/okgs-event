@@ -4,6 +4,7 @@ import { isValidAddress } from "@/data/bd-geo";
 import { db, initDb } from "@/lib/db";
 import { getAdminFromRequest, hashPassword } from "@/lib/auth";
 import { generateQRDataUrl, generateUserCode } from "@/lib/qr";
+import { SCHOOL_LOGO_URL } from "@/lib/constants";
 
 const SAFE_USER_COLUMNS = `id, user_code, name, phone, email, division, district,
   upazila, union_name, institute, ssc_batch, photo_url, qr_code_url, created_at`;
@@ -74,7 +75,7 @@ export async function POST(request) {
     };
     const institute = String(body.institute || "").trim() || null;
     const sscBatch = String(body.ssc_batch || "").trim() || null;
-    const photoUrl = String(body.photo_url || "/okgs-mark.svg").trim();
+    const photoUrl = String(body.photo_url || SCHOOL_LOGO_URL).trim();
 
     if (!name || name.length > 100 || !PHONE_PATTERN.test(phone)) {
       return NextResponse.json({ error: "Enter a valid attendee name and phone number." }, { status: 400 });

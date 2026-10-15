@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import CornerFrame from "@/app/components/CornerFrame";
 import SupportContact from "@/app/components/SupportContact";
 import { Icon } from "@/app/components/Icons";
-import { DEFAULT_SUPPORT_PHONE, TICKET_BACKGROUND_URL } from "@/lib/constants";
+import { DEFAULT_SUPPORT_PHONE, SCHOOL_LOGO_URL, TICKET_BACKGROUND_URL } from "@/lib/constants";
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
@@ -71,7 +71,7 @@ export default function DashboardPage() {
         <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/dashboard" className="flex items-center gap-3">
             <img
-              src={config?.school_logo_1 || "/okgs-mark.svg"}
+              src={config?.school_logo_1 || SCHOOL_LOGO_URL}
               alt=""
               className="h-9 w-9 rounded-xs border border-line object-contain"
             />
@@ -116,7 +116,7 @@ export default function DashboardPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex gap-2">
                     <img
-                      src={config?.school_logo_1 || "/okgs-mark.svg"}
+                      src={config?.school_logo_1 || SCHOOL_LOGO_URL}
                       alt="Primary school logo"
                       className="h-11 w-11 rounded-xs border border-white/10 bg-white object-contain p-1"
                     />

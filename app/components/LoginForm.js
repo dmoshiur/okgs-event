@@ -7,11 +7,7 @@ import AuthScreen from "@/app/components/AuthScreen";
 import CornerFrame from "@/app/components/CornerFrame";
 import { toDialNumber, toWhatsAppNumber } from "@/app/components/SupportContact";
 import { Icon } from "@/app/components/Icons";
-import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
-
-/** Canonical OKGS mark served from Cloudinary. */
-const SCHOOL_LOGO_URL =
-  "https://res.cloudinary.com/tt7oyjd1/image/upload/okgs/okgs-logo.png";
+import { DEFAULT_SCHOOL_NAME, DEFAULT_SUPPORT_PHONE, SCHOOL_LOGO_URL } from "@/lib/constants";
 
 export default function LoginForm({ config }) {
   const [identifier, setIdentifier] = useState("");
@@ -64,7 +60,8 @@ export default function LoginForm({ config }) {
     }
   }
 
-  const schoolName = config?.school_name_1 || "OMAR KINDERGARTEN SCHOOL";
+  const schoolName = config?.school_name_1 || DEFAULT_SCHOOL_NAME;
+  const logoUrl = config?.school_logo_1 || SCHOOL_LOGO_URL;
   const supportPhone = config?.support_phone || DEFAULT_SUPPORT_PHONE;
 
   return (
@@ -85,7 +82,7 @@ export default function LoginForm({ config }) {
           {/* Clean branding header: logo, school name, section subtitle — nothing else. */}
           <header className="relative text-center space-y-3">
             <img
-              src={SCHOOL_LOGO_URL}
+              src={logoUrl}
               alt={`${schoolName} logo`}
               width={48}
               height={48}
@@ -97,7 +94,7 @@ export default function LoginForm({ config }) {
                 {schoolName}
               </h1>
               <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-gold-deep">
-                Staff sign in
+                STAFF SIGN-IN · ATTENDEE ACCESS
               </p>
             </div>
           </header>
@@ -105,7 +102,7 @@ export default function LoginForm({ config }) {
           <form onSubmit={handleSubmit} className="relative space-y-4">
             <div className="field mb-0 space-y-1">
               <label htmlFor="login-identifier" className="field-label">
-                Student ID / email / phone
+                User ID / Email / Phone
               </label>
               <div className="relative">
                 <span className="field-icon">
@@ -118,7 +115,7 @@ export default function LoginForm({ config }) {
                   autoComplete="username"
                   value={identifier}
                   onChange={(event) => setIdentifier(event.target.value)}
-                  placeholder="Student ID / email / phone"
+                  placeholder="User ID / Email / Phone"
                   className="input input-icon py-2 text-sm"
                   required
                 />
@@ -126,14 +123,9 @@ export default function LoginForm({ config }) {
             </div>
 
             <div className="field mb-0 space-y-1">
-              <div className="flex items-center justify-between gap-3">
-                <label htmlFor="login-password" className="field-label">
-                  Password
-                </label>
-                <Link href="/forgot-password" className="link-underline text-xs">
-                  Forgot your password?
-                </Link>
-              </div>
+              <label htmlFor="login-password" className="field-label">
+                Password
+              </label>
               <div className="relative">
                 <span className="field-icon">
                   <Icon name="key" className="h-4 w-4" />
@@ -172,19 +164,22 @@ export default function LoginForm({ config }) {
               disabled={loading}
               className="btn btn-ink btn-shine w-full gap-2 py-2 text-sm"
             >
-              {loading ? "Signing in…" : "Sign in"}
-              {!loading ? <Icon name="arrowRight" className="h-4 w-4" /> : null}
+              {loading ? "Signing in…" : "Sign in →"}
             </button>
           </form>
 
-          <div className="relative border-t border-line pt-3 text-center space-y-2">
+          <footer className="relative border-t border-line pt-3 text-center space-y-2">
+            <p className="text-sm text-muted">
+              <Link href="/forgot-password" className="link-underline text-ink-900">
+                Forgot your password?
+              </Link>
+            </p>
             <p className="text-sm text-muted">
               Need an event pass?{" "}
-              <Link href="/register" className="link-underline text-ink-900">
+              <Link href="/register" className="link-underline font-semibold text-ink-900">
                 Register as an attendee
               </Link>
             </p>
-
             <p className="text-[11px] leading-5 text-muted">
               Support:{" "}
               <a
@@ -211,7 +206,7 @@ export default function LoginForm({ config }) {
               </a>
               )
             </p>
-          </div>
+          </footer>
         </div>
       </section>
     </AuthScreen>

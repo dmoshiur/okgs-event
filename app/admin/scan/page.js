@@ -245,7 +245,7 @@ export default function ScanPage() {
                       {result.user.division}, {result.user.district}, {result.user.upazila}
                     </p>
                     <p className="text-[11px] text-muted-2">
-                      {result.user.institute} {result.user.ssc_batch ? `• ${result.user.ssc_batch}` : ""}
+                      {result.user.institute ? `${result.user.institute} • ` : ""}Batch: {result.user.ssc_batch || "—"}
                     </p>
                   </div>
                 </div>

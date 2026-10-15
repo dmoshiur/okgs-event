@@ -20,16 +20,26 @@ Support contact `+8801709202140` (call and WhatsApp) is rendered from `system_co
 - `/` and `/login` — one unified sign-in screen; there is no marketing or landing page. The sign-in card sits on the muted full-screen school video inside a 90-degree gold frame, with dynamically configured school branding, an amber event pill, attendee/staff sign-in (user and key icons plus password visibility), the navy `Sign in →` action, the attendee-registration link, and password recovery.
 - `/register` — public attendee registration with photo upload, a Bangladesh division → district → upazila → union address selector, and an instant QR pass.
 - `/dashboard` — attendee pass, QR download, printable ticket, and attendance history.
-- `/admin` — staff dashboard: the dark-ink sidebar with the school shield, active-event selector, the nine primary modules, a framed help panel, and the profile bar with the role tag; the content area carries the serif "Dashboard" heading, six framed stat cards (Fair Collections, Current Balance, Pending Funds, Expenses, Students Paid, Admitted At The Gate — gate figures are live, finance figures show a dash until a fee ledger exists), and a notices feed with `All / Science Fair / Notice / Update / Unread` filters, expandable notices, urgent badges, and staff-created notices.
-- `/admin/canteen`, `/admin/funds`, `/admin/dues`, `/admin/expenses`, `/admin/memos`, `/admin/collections` — navigation placeholders. They state that the module is not connected and show no figures.
-- `/admin/scan` — webcam QR scanner with manual-code fallback and alternating check-in/check-out logs.
-- `/admin/print` — individual or batch A4 pass printing.
-- `/admin/settings` — school logos/names, active event, notice, and ticket branding. The support phone (default `+8801709202140`) is edited here.
-- `/admin/admins` — super-admin-only staff account management.
+- `/admin` — staff dashboard with four framed stat cards: total registered users, batch-wise user count (SSC batch distribution), admitted at the gate, and currently inside versus exited. The sidebar carries the school shield, the active-event selector, and the primary modules listed below, plus a help panel and the role tag.
+- `/admin/users` — attendee directory (search, edit, delete, manual add, and per-attendee pass printing).
+- `/admin/analytics` — Batch Analytics: registrations per SSC batch (`SSC 2024`, `SSC 2025`, `Guest`, …) with admitted, inside, and exited counts.
+- `/admin/notices` — notice board: publish, filter, and delete event notices.
+- `/admin/scan` — Live Scan: webcam QR scanner with manual-code fallback and alternating check-in/check-out logs. Each scan shows the attendee's photo, name, phone, and batch.
+- `/admin/print` — Print Passes: individual or batch A4 pass printing.
+- `/admin/settings` — Settings: school logos/names, active event, notice, and ticket branding. The support phone (default `+8801709202140`) is edited here.
+- `/admin/admins` — super-admin-only staff account management (Staff Accounts).
 
 The address hierarchy includes all eight divisions and the bundled district/upazila/union lists. The source and license attribution are in `data/LOCATION-DATA-LICENSE.md`.
 
 Support contact (call and WhatsApp) appears on the sign-in card, the admin sidebar, and the attendee dashboard.
+
+## Scope
+
+This portal covers participant registration, batch-wise tracking, pass generation, live gate attendance, and admin controls. Financial accounting, funds, dues, and canteen collections are intentionally out of scope.
+
+## Database
+
+All tables (`system_config`, `users`, `admins`, `attendance_logs`, `password_resets`, `notices`) are created with `CREATE TABLE IF NOT EXISTS` when the server boots, via `instrumentation.js`. Initialization is also retried lazily on the first request if the startup attempt fails.
 
 ## Stack
 

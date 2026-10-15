@@ -38,8 +38,8 @@ export async function POST(request) {
     }
 
     const userResult = await db.execute({
-      sql: "SELECT id, user_code, phone, email, password_hash FROM users WHERE phone = ? OR lower(email) = ? LIMIT 1",
-      args: [identifier, normalizedEmail],
+      sql: "SELECT id, user_code, phone, email, password_hash FROM users WHERE phone = ? OR lower(email) = ? OR upper(user_code) = ? LIMIT 1",
+      args: [identifier, normalizedEmail, identifier.toUpperCase()],
     });
     const user = userResult.rows[0];
 

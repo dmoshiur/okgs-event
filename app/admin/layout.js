@@ -5,37 +5,33 @@ import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@/app/components/Icons";
 import CornerFrame from "@/app/components/CornerFrame";
 import SupportContact from "@/app/components/SupportContact";
-import { DEFAULT_SUPPORT_PHONE } from "@/lib/constants";
+import { DEFAULT_SUPPORT_PHONE, DEFAULT_SCHOOL_NAME, SCHOOL_LOGO_URL } from "@/lib/constants";
 
-const DEFAULT_LOGO = "/okgs-mark.svg";
+const DEFAULT_EVENT_TITLE = "Annual School Function & Farewell";
 
-// Primary navigation follows the sidebar order in the portal specification.
+// Primary sidebar, in the order required by the portal specification.
 const PRIMARY_NAV = [
   { href: "/admin", label: "Dashboard", icon: "dashboard", exact: true },
-  { href: "/admin/users", label: "Students", icon: "students" },
-  { href: "/admin/scan", label: "Scan", icon: "scan" },
-  { href: "/admin/canteen", label: "Canteen", icon: "canteen" },
-  { href: "/admin/funds", label: "Funds", icon: "funds" },
-  { href: "/admin/dues", label: "Dues", icon: "dues" },
-  { href: "/admin/expenses", label: "Expenses", icon: "expenses" },
-  { href: "/admin/memos", label: "Memos", icon: "memos" },
-  { href: "/admin/collections", label: "Collections", icon: "collections" },
+  { href: "/admin/users", label: "Users", icon: "students" },
+  { href: "/admin/analytics", label: "Batch Analytics", icon: "analytics" },
+  { href: "/admin/scan", label: "Live Scan", icon: "scan" },
+  { href: "/admin/notices", label: "Notices", icon: "bell" },
+  { href: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 
-// Existing operational pages stay reachable under Tools.
+// Operational pages that sit beneath the primary modules.
 const TOOL_NAV = [
   { href: "/admin/attendance", label: "Attendance Logs", icon: "logs" },
   { href: "/admin/print", label: "Print Passes", icon: "print" },
-  { href: "/admin/settings", label: "Branding Settings", icon: "settings" },
 ];
 
 const SUPERADMIN_NAV = { href: "/admin/admins", label: "Staff Accounts", icon: "admins" };
 
-// Mobile bottom bar: five tabs, with Scan as the elevated centre action.
+// Mobile bottom bar: four tabs, with Live Scan as the elevated centre action.
 const MOBILE_TABS = [
   { href: "/admin", label: "Dashboard", icon: "dashboard", exact: true },
-  { href: "/admin/users", label: "Students", icon: "students" },
-  { href: "/admin/scan", label: "Scan", icon: "scan", center: true },
+  { href: "/admin/users", label: "Users", icon: "students" },
+  { href: "/admin/scan", label: "Live Scan", icon: "scan", center: true },
   { href: "/admin/print", label: "Tickets", icon: "tickets" },
 ];
 
@@ -113,10 +109,15 @@ export default function AdminLayout({ children }) {
 
   const isSuperadmin = user?.role === "superadmin";
   const tools = isSuperadmin ? [...TOOL_NAV, SUPERADMIN_NAV] : TOOL_NAV;
+  const mobileHrefs = new Set(MOBILE_TABS.map((item) => item.href));
+  const moreItems = [
+    ...PRIMARY_NAV.filter((item) => !mobileHrefs.has(item.href)),
+    ...tools.filter((item) => !mobileHrefs.has(item.href)),
+  ];
   const roleLabel = isSuperadmin ? "Super Admin" : "Staff";
-  const schoolName = config?.school_name_1 || "OMAR KINDERGARTEN SCHOOL";
-  const eventTitle = config?.event_title || "OKGS Genesis 2026";
-  const logo = config?.school_logo_1 || DEFAULT_LOGO;
+  const schoolName = config?.school_name_1 || DEFAULT_SCHOOL_NAME;
+  const eventTitle = config?.event_title || DEFAULT_EVENT_TITLE;
+  const logo = config?.school_logo_1 || SCHOOL_LOGO_URL;
   const supportPhone = config?.support_phone || DEFAULT_SUPPORT_PHONE;
 
   return (
@@ -352,7 +353,7 @@ export default function AdminLayout({ children }) {
               </button>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              {[...PRIMARY_NAV.slice(3), ...tools].map((item) => (
+              {moreItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

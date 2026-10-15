@@ -5,7 +5,7 @@ import { divisions, getDistricts, getUpazilas, getUnions } from "@/data/bd-geo";
 import CornerFrame from "@/app/components/CornerFrame";
 import SupportContact, { toDialNumber, toWhatsAppNumber } from "@/app/components/SupportContact";
 import { Icon } from "@/app/components/Icons";
-import { DEFAULT_SUPPORT_PHONE, THEME_VIDEO_URL } from "@/lib/constants";
+import { BATCH_SUGGESTIONS, DEFAULT_SUPPORT_PHONE, SCHOOL_LOGO_URL, THEME_VIDEO_URL } from "@/lib/constants";
 
 const REQUIRED_NOTE = "Required fields are marked with *";
 
@@ -131,7 +131,7 @@ export default function RegisterPage() {
             </p>
             <h1 className="font-display text-2xl font-semibold text-[#f7f3e9]">Your QR pass is ready</h1>
             <p className="mt-1 text-xs text-white/60">
-              Keep this code — it is your identity at the gate and canteen.
+              Keep this code — it is your identity at the gate.
             </p>
           </header>
 
@@ -220,7 +220,7 @@ export default function RegisterPage() {
               </Link>
 
               <img
-                src="/okgs-mark.svg"
+                src={SCHOOL_LOGO_URL}
                 alt=""
                 className="mt-10 h-14 w-14 rounded-xs border border-white/10 bg-white object-contain p-1.5"
               />
@@ -392,8 +392,14 @@ export default function RegisterPage() {
                       value={form.ssc_batch}
                       onChange={handleChange}
                       className="input"
-                      placeholder="2015, 2020 etc."
+                      list="ssc-batch-options"
+                      placeholder="SSC 2025, Guest, or your own"
                     />
+                    <datalist id="ssc-batch-options">
+                      {BATCH_SUGGESTIONS.map((option) => (
+                        <option key={option} value={option} />
+                      ))}
+                    </datalist>
                   </label>
                 </div>
               </section>
